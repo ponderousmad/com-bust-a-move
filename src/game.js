@@ -2,6 +2,7 @@
     "use strict";
     
     var loader = new ImageBatch("images/"),
+        fire = loader.load("fire.png"),
         keyboardState = new INPUT.KeyboardState(window),
         mouseState = null,
         touchState = null,
@@ -28,7 +29,10 @@
     }
     
     function draw(context, width, height) {
-        context.fillText("Com-bust-a-move", width * 0.5, height * 0.5);
+        context.font = "50px serif";
+        DRAW.centered(context, fire, width * 0.5, height * 0.5);
+        
+        DRAW.centeredText(context, "Com-bust-a-move", width * 0.5, height * 0.5, "black", "white", 2);
     }
     
     function safeWidth() {

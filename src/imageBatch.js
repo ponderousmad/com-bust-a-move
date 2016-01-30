@@ -49,3 +49,36 @@ var ImageBatch = (function (baseURL) {
     
     return ImageBatch;
 }(rootURL));
+
+var DRAW = (function () {
+    "use strict";
+    
+    function drawCentered(context, image, pos, y) {
+        var x = pos;
+        if (typeof x !== "number") {
+            y = pos.y;
+            x = pos.x;
+        }
+        context.drawImage(image, x - image.width * 0.5, y - image.height * 0.5);
+    }
+    
+    function drawTextCentered(context, text, x, y, fill, shadow, offset) {
+        context.textAlign = "center";
+        if (shadow) {
+            context.fillStyle = shadow;
+            if (!offset) {
+                offset = 2;
+            }
+            context.fillText(text, x + offset, y + offset);
+        }
+        if (fill) {
+            context.fillStyle = fill;
+        }
+        context.fillText(text, x, y);
+    }
+    
+    return {
+        centered: drawCentered,
+        centeredText: drawTextCentered
+    };
+}());
