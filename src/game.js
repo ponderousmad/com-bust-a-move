@@ -37,7 +37,7 @@
         FIRE_WIDTH = 106,
         FIRE_HEIGHT = FIRE_WIDTH,
         BACKGROUND_PIXEL_WIDTH = 300,
-        music = new AUDIO.Music("audio/mus/musLoop01.ogg"),
+        music = new AUDIO.Music("audio/mus/musLoop05.ogg"),
         fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true);
     
     function Sequence() {
