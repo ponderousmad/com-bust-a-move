@@ -29,9 +29,14 @@ var TIMING = (function () {
         return elapsed;
     }
     
+    function getTimeSince(time) {
+        return time - getTimestamp();
+    }
+    
     return {
-        getLastTime: getLastTime,
-        getTime: getTimestamp,
+        frameStart: getLastTime,
+        now: getTimestamp,
+        since: getTimeSince,
         updateDelta: updateDelta
     };
 }());

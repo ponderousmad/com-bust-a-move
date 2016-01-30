@@ -1,4 +1,4 @@
-var INPUT = (function (LINEAR) {
+var INPUT = (function (LINEAR, TIMING, AUDIO) {
     "use strict";
 
     function KeyboardState(element, capture) {
@@ -9,7 +9,7 @@ var INPUT = (function (LINEAR) {
         if (element) {
             element.onkeydown = function (e) {
                 e = e || window.event;
-                self.pressed[e.keyCode] = true;
+                self.pressed[e.keyCode] = TIMING.now();
                 if (capture) {
                     e.preventDefault();
                 }
@@ -71,6 +71,10 @@ var INPUT = (function (LINEAR) {
             }
         }
     };
+    
+    KeyboardState.prototype.keyTime = function (keyCode) {
+        return this.pressed[keyCode];
+    };
 
     function MouseState(element) {
         this.location = new LINEAR.Vector(0, 0);
@@ -130,7 +134,7 @@ var INPUT = (function (LINEAR) {
         var self = this;
         var handleTouch = function(e) {
             AUDIO.noteOn();
-            self.touches = event.touches;
+            self.touches = e.touches;
             e.preventDefault();
         };
 
@@ -154,4 +158,4 @@ var INPUT = (function (LINEAR) {
         MouseState: MouseState,
         TouchState: TouchState
     };
-}(LINEAR));
+}(LINEAR, TIMING, AUDIO));
