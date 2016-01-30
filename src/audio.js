@@ -57,7 +57,7 @@ var AUDIO = (function (baseURL) {
         }
     }
     
-    function play(sound) {
+    function play(sound, enableGain) {
         if (gAudioContext === null || sound.buffer === null) {
             return;
         }
@@ -67,7 +67,14 @@ var AUDIO = (function (baseURL) {
         sound.source = gAudioContext.createBufferSource();
         sound.source.buffer = sound.buffer;
         sound.source.loop = sound.loop;
-        sound.source.connect(gAudioContext.destination);
+        if (enableGain) {
+            sound.gain = gAudioContext.createGain();
+            sound.gain.gain.value = sound.volume;
+            sound.source.connect(sound.gain);
+            sound.gain.connect(gAudioContext.destination);
+        } else {
+            sound.source.connect(gAudioContext.destination);
+        }
         sound.source.start();
     }
 
@@ -80,12 +87,14 @@ var AUDIO = (function (baseURL) {
     };
 
     SoundEffect.prototype.play = function () {
-        play(this);
+        play(this, false);
     };
     
     function Music(resource) {
         setup(this, resource, true);
         this.playing = false;
+        this.gain = null;
+        this.volume = 1;
     }
     
     Music.prototype.isLoaded = function() {
@@ -93,9 +102,16 @@ var AUDIO = (function (baseURL) {
     };
 
     Music.prototype.play = function () {
-        play(this);
+        play(this, true);
         this.playing = true;
     };
+    
+    Music.prototype.setVolume = function (volume) {
+        this.volume = volume;
+        if (this.playing) {
+            this.gain.gain.value = volume;
+        }
+    }
     
     return {
         SoundEffect: SoundEffect,

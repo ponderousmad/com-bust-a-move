@@ -29,7 +29,6 @@
             Escape : 27,
             LT : 188,
             GT : 190
-            
         },
         player1 = new Player([KEYS.Up, KEYS.Down, KEYS.Left, KEYS.Right], p1Images, 1),
         player2 = new Player(["W".charCodeAt(), "S".charCodeAt(), "A".charCodeAt(), "D".charCodeAt()], p2Images, -1),
@@ -61,6 +60,7 @@
         fire.updatePlayback(elapsed, fireDraw);
         
         if (music.isLoaded() && !music.playing) {
+            music.setVolume(0.25);
             music.play();
         }
     }
