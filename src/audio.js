@@ -14,7 +14,7 @@ var AUDIO = (function (baseURL) {
     function audioNoteOn() {
         if (!gNoteOn) {
             gNoteOn = true;
-            if(gAudioContext !== null) {
+            if (gAudioContext !== null) {
                 // Trick to enable audio without downloading a sound from:
                 // https://paulbakaus.com/tutorials/html5/web-audio-on-ios/
                 // create empty buffer
@@ -30,14 +30,14 @@ var AUDIO = (function (baseURL) {
             }
         }
     }
-
-    function SoundEffect(resource) {
-        this.resource = resource;
-        this._source = null;
-        this._buffer = null;
+    
+    function setup(sound, resource, loop) {
+        sound.resource = resource;
+        sound.source = null;
+        sound.buffer = null;
+        sound.loop = loop;
         
         resource = baseURL + resource;
-        var self = this;
         
         if (gAudioContext !== null) {
             var request = new XMLHttpRequest();
@@ -47,7 +47,7 @@ var AUDIO = (function (baseURL) {
                 var audioData = request.response;
                 gAudioContext.decodeAudioData(audioData,
                     function (buffer) {
-                        self._buffer = buffer;
+                        sound.buffer = buffer;
                     },
                     function (e) {
                         console.log("Error with decoding audio data" + e.err);
@@ -56,22 +56,39 @@ var AUDIO = (function (baseURL) {
             request.send();
         }
     }
+    
+    function play(sound) {
+        if (gAudioContext === null || sound.buffer === null) {
+            return;
+        }
+        if (sound.source) {
+            sound.source.disconnect(gAudioContext.destination);
+        }
+        sound.source = gAudioContext.createBufferSource();
+        sound.source.buffer = sound.buffer;
+        sound.source.loop = sound.loop;
+        sound.source.connect(gAudioContext.destination);
+        sound.source.start();
+    }
+
+    function SoundEffect(resource) {
+        setup(this, resource, false);
+    }
         
     SoundEffect.prototype.isLoaded = function () {
-        return gAudioContext === null || this._buffer !== null;
+        return gAudioContext === null || this.buffer !== null;
     };
 
     SoundEffect.prototype.play = function () {
-        if (gAudioContext === null || this._buffer === null) {
-            return;
-        }
-        if (this._source) {
-            this._source.disconnect(gAudioContext.destination);
-        }
-        this._source = gAudioContext.createBufferSource();
-        this._source.buffer = this._buffer;
-        this._source.connect(gAudioContext.destination);
-        this._source.start();
+        play(this);
+    };
+    
+    function Music(resource) {
+        this.setup(this, resource, true);
+    }
+    
+    Music.prototype.isLoaded = function() {
+        return gAudioContext === null || this.buffer !== null;
     };
     
     return {

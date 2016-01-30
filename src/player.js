@@ -6,6 +6,7 @@ var Player = (function () {
         BASE_OFFSET = 150,
         TOP = -60,
         LONG_PAST = 100000,
+        bell = new AUDIO.SoundEffect("audio/Bell_E.wav"),
         NOTE_LIST = ["U", "D", "L", "R"];
     
     function getRandomNote() {
@@ -96,6 +97,9 @@ var Player = (function () {
             var beat = this.sequence[this.sequenceOffset];
             if (beat.check(note, now, elapsed)) {
                 this.sequenceOffset += 1;
+                if (this.sequenceOffset == this.sequence.length) {
+                    bell.play();
+                }
             }
         }
     };
