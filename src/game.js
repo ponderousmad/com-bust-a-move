@@ -3,6 +3,18 @@
     
     var loader = new ImageBatch("images/"),
         fire = loader.load("fire.png"),
+        p1Images = {
+            U: loader.load("up.png"),
+            D: loader.load("down.png"),
+            L: loader.load("left.png"),
+            R: loader.load("right.png")
+        },
+        p2Images = {
+            U: loader.load("w.png"),
+            D: loader.load("s.png"),
+            L: loader.load("a.png"),
+            R: loader.load("d.png")
+        },
         keyboardState = new INPUT.KeyboardState(window),
         mouseState = null,
         touchState = null,
@@ -15,24 +27,42 @@
             Space : 32,
             Escape : 27,
             LT : 188,
-            GT : 190,
-            A : "A".charCodeAt(),
-            S : "S".charCodeAt(),
-            D : "D".charCodeAt(),
-            F : "F".charCodeAt()
-        };
+            GT : 190
+            
+        },
+        player1 = new Player([KEYS.Up, KEYS.Down, KEYS.Left, KEYS.Right], p1Images, 1),
+        player2 = new Player(["W".charCodeAt(), "S".charCodeAt(), "A".charCodeAt(), "D".charCodeAt()], p2Images, -1),
+        twoPlayer = true;
     
+    function Sequence() {
+        this.notes = [];
+    }
     
     loader.commit();
     
     function update() {
+        var now = TIMING.now(),
+            elapsed = TIMING.updateDelta(now);
+        
+        player1.update(now, elapsed, keyboardState);
+        if (twoPlayer) {
+            player2.update(now, elapsed, keyboardState);
+        }
     }
     
     function draw(context, width, height) {
+        var centerX = width * 0.5,
+            centerY = height * 0.5;
         context.font = "50px serif";
-        DRAW.centered(context, fire, width * 0.5, height * 0.5);
+        if (loader.loaded) {
+            DRAW.centered(context, fire, centerX, centerY);
+            player1.draw(context, centerX, centerY);
+            if (twoPlayer) {
+                player2.draw(context, centerX, centerY);
+            }
+        }
         
-        DRAW.centeredText(context, "Com-bust-a-move", width * 0.5, height * 0.5, "black", "white", 2);
+        // DRAW.centeredText(context, "Com-bust-a-move", centerX, centerY, "black", "white", 2);
     }
     
     function safeWidth() {

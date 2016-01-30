@@ -22,9 +22,8 @@ var TIMING = (function () {
         return lastTime;
     }
     
-    function updateDelta() {
-        var now = getTimestamp(),
-            elapsed = now - lastTime;
+    function updateDelta(now) {
+        var elapsed = now - lastTime;
         lastTime = now;
         return elapsed;
     }
