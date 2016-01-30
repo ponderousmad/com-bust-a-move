@@ -1,3 +1,11 @@
+var ALIGN = {
+    Center: 0,
+    Left: 1,
+    Right: 2,
+    Top: 4,
+    Bottom: 8
+};
+
 var Flipbook = (function () {
     function Flipbook(imageBatch, baseName, frameCount, digits) {
         this.frames = [];
@@ -34,15 +42,28 @@ var Flipbook = (function () {
         }
     };
     
-    Flipbook.prototype.draw = function(context, playback, x, y, center, width, height) {
+    Flipbook.prototype.draw = function(context, playback, x, y, alignment, width, height) {
         if (!width) {
             width = this.frames[0].width;
         }
         if (!height) {
             height = this.frames[0].height;
         }
+        
+        if ((alignment & ALIGN.Bottom) !== 0) {
+            y -= height;
+        } else if ((alignment & ALIGN.Top) === 0) { // center
+            y -= height * 0.5;
+        }
+        
+        if ((alignment & ALIGN.Left) !== 0) {
+            x -= width;
+        } else if ((alignment & ALIGN.Right) === 0) { // center
+            x -= width * 0.5;
+        }
+        
         var index = Math.min(this.frames.length - 1, Math.floor(playback.elapsed / playback.timePerFrame));
-        context.drawImage(this.frames[index], x - (center ? width * 0.5 : 0), y - (center ? height * 0.5 : 0), width, height);
+        context.drawImage(this.frames[index], x, y, width, height);
     };
     
     return Flipbook;

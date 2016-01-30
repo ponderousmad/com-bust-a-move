@@ -30,8 +30,8 @@
             LT : 188,
             GT : 190
         },
-        player1 = new Player([KEYS.Up, KEYS.Down, KEYS.Left, KEYS.Right], p1Images, 1),
-        player2 = new Player(["W".charCodeAt(), "S".charCodeAt(), "A".charCodeAt(), "D".charCodeAt()], p2Images, -1),
+        player1 = new GAMEPLAY.Player([KEYS.Up, KEYS.Down, KEYS.Left, KEYS.Right], p1Images, 1),
+        player2 = new GAMEPLAY.Player(["W".charCodeAt(), "S".charCodeAt(), "A".charCodeAt(), "D".charCodeAt()], p2Images, -1),
         twoPlayer = true,
         FIRE_FRAME_TIME = 80,
         FIRE_WIDTH = 106,
@@ -63,6 +63,7 @@
             music.setVolume(0.25);
             music.play();
         }
+        GAMEPLAY.updateDancers(elapsed);
     }
     
     function pixelated(context, drawPixels) {
@@ -87,7 +88,7 @@
 
         if (loader.loaded) {
             DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
-            fire.draw(context, fireDraw, centerX, centerY, true, FIRE_WIDTH, FIRE_HEIGHT);
+            fire.draw(context, fireDraw, centerX, centerY - 15, ALIGN.Center, FIRE_WIDTH, FIRE_HEIGHT);
             player1.draw(context, centerX, centerY);
             if (twoPlayer) {
                 player2.draw(context, centerX, centerY);

@@ -1,13 +1,24 @@
-var Player = (function () {
+var GAMEPLAY = (function () {
     "use strict";
     
-    var noteSpacing = 24,
+    var loader = new ImageBatch("images/"),
+        noteSpacing = 24,
         KEY_DRAW_FOR = 250,
         BASE_OFFSET = 50,
-        TOP = -20,
+        BASELINE = 19,
+        NOTELINE = -25,
+        PRESSLINE = 30,
         LONG_PAST = 100000,
-        bell = new AUDIO.SoundEffect("audio/Bell_E.wav"),
+        bell = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.ogg"),
+        dancers = {
+            U: new Dancer(loader, "Guy1_"),
+            D: new Dancer(loader, "Guy2_"),
+            L: new Dancer(loader, "Guy3_"),
+            R: new Dancer(loader, "Guy4_")
+        },
         NOTE_LIST = ["U", "D", "L", "R"];
+    
+    loader.commit();
     
     function getRandomNote() {
         return NOTE_LIST[Math.floor(Math.random() * NOTE_LIST.length - 0.00001)];
@@ -16,12 +27,17 @@ var Player = (function () {
     function Beat() {
         this.note = getRandomNote();
         this.status = false;
+        this.dancer = dancers[this.note];
     }
     
     Beat.prototype.draw = function (context, images, x, y) {
         var image = images[this.note],
             width = image.width,
             height = image.height;
+        
+        this.dancer.draw(context, x, y + BASELINE);
+        
+        y += NOTELINE;
         
         if (this.status) {
             context.fillStyle = "rgba(0,255,0,0.25)";
@@ -68,13 +84,13 @@ var Player = (function () {
         };
     };
     
-    Player.prototype.drawPressedNote = function(context, centerX, centerY, note, offset) {
+    Player.prototype.drawPressedNote = function (context, centerX, centerY, note, offset) {
         if (this.lastPressed[note] < KEY_DRAW_FOR) {
-            DRAW.centered(context, this.images[note], centerX + offset * this.offsetDirection, centerY + TOP);
+            DRAW.centered(context, this.images[note], centerX + offset * this.offsetDirection, centerY + PRESSLINE);
         }
     };
     
-    Player.prototype.drawSequence = function(context, centerX, centerY) {
+    Player.prototype.drawSequence = function (context, centerX, centerY) {
         var offset = BASE_OFFSET;
         for (var i = 0; i < this.sequence.length; ++i) {
             var beat = this.sequence[i];
@@ -119,6 +135,15 @@ var Player = (function () {
             this.updateNote(NOTE_LIST[n], now, elapsed, keyboard);
         }
     };
+        
+    function updateDancers(elapsed) {
+        for (var n = 0; n < NOTE_LIST.length; ++n) {
+            dancers[NOTE_LIST[n]].update(elapsed);
+        }
+    }
     
-    return Player;
+    return {
+        Player: Player,
+        updateDancers: updateDancers
+    };
 }());
