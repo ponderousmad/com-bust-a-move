@@ -84,15 +84,22 @@ var AUDIO = (function (baseURL) {
     };
     
     function Music(resource) {
-        this.setup(this, resource, true);
+        setup(this, resource, true);
+        this.playing = false;
     }
     
     Music.prototype.isLoaded = function() {
         return gAudioContext === null || this.buffer !== null;
     };
+
+    Music.prototype.play = function () {
+        play(this);
+        this.playing = true;
+    };
     
     return {
         SoundEffect: SoundEffect,
+        Music: Music,
         noteOn: audioNoteOn
     };
 }(rootURL));
