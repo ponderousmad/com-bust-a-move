@@ -89,8 +89,9 @@ var GAMEPLAY = (function () {
         
         this.sequenceLength = MIN_SEQUENCE_LENGTH;
         this.sequence = createSequence(this.sequenceLength);
-        this.sequenceOffset = 0;
+        this.step = 0;
         this.endSequence = null;
+        this.arrowOffset = 0;
     }
     
     Player.prototype.resetLastPressed = function () {
@@ -102,8 +103,9 @@ var GAMEPLAY = (function () {
         };
     };
     
-    Player.prototype.drawPressedNote = function (context, centerX, centerY, note, offset) {
+    Player.prototype.drawPressedNote = function (context, centerX, centerY, note) {
         if (this.lastPressed[note] < KEY_DRAW_FOR) {
+            var offset = BASE_OFFSET + (this.step + this.arrowOffset) * noteSpacing;
             DRAW.centered(context, this.images[note], centerX + offset * this.offsetDirection, centerY + PRESSLINE);
         }
     };
@@ -118,23 +120,24 @@ var GAMEPLAY = (function () {
     };
     
     Player.prototype.draw = function (context, centerX, centerY) {
-        var offset = BASE_OFFSET;
         for (var n = 0; n < NOTE_LIST.length; ++n) {
-            this.drawPressedNote(context, centerX, centerY, NOTE_LIST[n], offset);
-            offset += noteSpacing;
+            this.drawPressedNote(context, centerX, centerY, NOTE_LIST[n]);
         }
         this.drawSequence(context, centerX, centerY);
     };
     
     Player.prototype.sequencePressed = function(note, now, elapsed) {
-        if (this.sequenceOffset < this.sequence.length) {
-            var beat = this.sequence[this.sequenceOffset];
+        if (this.step < this.sequence.length) {
+            var beat = this.sequence[this.step];
             if (beat.check(note, now, elapsed)) {
-                this.sequenceOffset += 1;
-                if (this.sequenceOffset == this.sequence.length) {
+                this.step += 1;
+                if (this.step == this.sequence.length) {
                     this.endSequence = new BeatDrop();
                     bell.play();
                 }
+                this.arrowOffset = -1;
+            } else {
+                this.arrowOffset = 0;
             }
         }
     };
@@ -160,7 +163,7 @@ var GAMEPLAY = (function () {
                 if (this.sequenceLength < MAX_SEQUENCE_LENGTH) {
                     this.sequenceLength += 1;
                 }
-                this.sequenceOffset = 0;
+                this.step = 0;
                 this.sequence = createSequence(this.sequenceLength);
             }
         }
