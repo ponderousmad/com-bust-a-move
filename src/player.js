@@ -2,13 +2,16 @@ var GAMEPLAY = (function () {
     "use strict";
     
     var loader = new ImageBatch("images/"),
-        noteSpacing = 24,
+        noteSpacing = 20,
         KEY_DRAW_FOR = 250,
-        BASE_OFFSET = 50,
+        BASE_OFFSET = 37,
         BASELINE = 19,
         NOTELINE = -25,
         PRESSLINE = 30,
+        DROP_TIME = 1000,
         LONG_PAST = 100000,
+        MIN_SEQUENCE_LENGTH = 3,
+        MAX_SEQUENCE_LENGTH = 6,
         bell = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.ogg"),
         dancers = {
             U: new Dancer(loader, "Guy1_"),
@@ -55,6 +58,23 @@ var GAMEPLAY = (function () {
         return false;
     };
     
+    function BeatDrop() {
+        this.remaining = DROP_TIME;
+    }
+    
+    BeatDrop.prototype.update = function (elapsed) {
+        this.remaining -= elapsed;
+        return this.remaining <= 0;
+    }
+    
+    function createSequence(length) {
+        var sequence = [];
+        for (var c = 0; c < length; ++c) {
+            sequence.push(new Beat());
+        }
+        return sequence;
+    }
+    
     function Player(keys, images, offsetDirection) {
         this.keyMap = {
             U: keys[0],
@@ -67,12 +87,10 @@ var GAMEPLAY = (function () {
         
         this.resetLastPressed();
         
-        this.sequence = [
-            new Beat(),
-            new Beat(),
-            new Beat()
-        ];
+        this.sequenceLength = MIN_SEQUENCE_LENGTH;
+        this.sequence = createSequence(this.sequenceLength);
         this.sequenceOffset = 0;
+        this.endSequence = null;
     }
     
     Player.prototype.resetLastPressed = function () {
@@ -114,6 +132,7 @@ var GAMEPLAY = (function () {
             if (beat.check(note, now, elapsed)) {
                 this.sequenceOffset += 1;
                 if (this.sequenceOffset == this.sequence.length) {
+                    this.endSequence = new BeatDrop();
                     bell.play();
                 }
             }
@@ -133,6 +152,17 @@ var GAMEPLAY = (function () {
     Player.prototype.update = function (now, elapsed, keyboard) {
         for (var n = 0; n < NOTE_LIST.length; ++n) {
             this.updateNote(NOTE_LIST[n], now, elapsed, keyboard);
+        }
+        
+        if (this.endSequence !== null) {
+            if (this.endSequence.update(elapsed)) {
+                this.endSequence = null;
+                if (this.sequenceLength < MAX_SEQUENCE_LENGTH) {
+                    this.sequenceLength += 1;
+                }
+                this.sequenceOffset = 0;
+                this.sequence = createSequence(this.sequenceLength);
+            }
         }
     };
         
