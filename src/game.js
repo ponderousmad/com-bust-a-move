@@ -48,6 +48,8 @@
         if (twoPlayer) {
             player2.update(now, elapsed, keyboardState);
         }
+        
+        keyboardState.postUpdate();
     }
     
     function draw(context, width, height) {
