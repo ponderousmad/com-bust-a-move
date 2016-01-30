@@ -14,10 +14,10 @@ var GAMEPLAY = (function () {
         MAX_SEQUENCE_LENGTH = 6,
         bell = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.ogg"),
         dancers = {
-            U: new Dancer(loader, "Guy1_"),
-            D: new Dancer(loader, "Guy2_"),
-            L: new Dancer(loader, "Guy3_"),
-            R: new Dancer(loader, "Guy4_")
+            U: new Dancer(loader, "guy1_"),
+            D: new Dancer(loader, "guy2_"),
+            L: new Dancer(loader, "guy3_"),
+            R: new Dancer(loader, "guy4_")
         },
         NOTE_LIST = ["U", "D", "L", "R"];
     
