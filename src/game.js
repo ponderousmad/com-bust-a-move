@@ -2,7 +2,7 @@
     "use strict";
     
     var loader = new ImageBatch("images/"),
-        fire = new Flipbook(loader, "fire1/fire.png"),
+        fire = new Flipbook(loader, "fire1/fire_", 16, 2),
         background = loader.load("bg.png"),
         p1Images = {
             U: loader.load("up.png"),
@@ -35,7 +35,10 @@
         player2 = new Player(["W".charCodeAt(), "S".charCodeAt(), "A".charCodeAt(), "D".charCodeAt()], p2Images, -1),
         twoPlayer = true,
         FIRE_FRAME_TIME = 80,
-        BACKGROUND_PIXEL_WIDTH = 300;
+        FIRE_WIDTH = 106,
+        FIRE_HEIGHT = FIRE_WIDTH,
+        BACKGROUND_PIXEL_WIDTH = 300,
+        fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true);
     
     function Sequence() {
         this.notes = [];
@@ -53,6 +56,8 @@
         }
         
         keyboardState.postUpdate();
+        
+        fire.updatePlayback(elapsed, fireDraw);
     }
     
     function pixelated(context, drawPixels) {
@@ -66,18 +71,18 @@
     function draw(context, width, height) {
         var centerX = 0,
             centerY = 0,
+            aspect = background.height / background.width,
             pixelSize = width / BACKGROUND_PIXEL_WIDTH;
         
         context.save();        
         pixelated(context, true);
         context.scale(pixelSize, pixelSize);
         context.translate(BACKGROUND_PIXEL_WIDTH * 0.5, (height * 0.5) / pixelSize);
-
-        DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, background.height / pixelSize);
-        
         context.font = "50px serif";
+
         if (loader.loaded) {
-            //DRAW.centered(context, fire, centerX, centerY);
+            DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
+            fire.draw(context, fireDraw, centerX, centerY, true, FIRE_WIDTH, FIRE_HEIGHT);
             player1.draw(context, centerX, centerY);
             if (twoPlayer) {
                 player2.draw(context, centerX, centerY);

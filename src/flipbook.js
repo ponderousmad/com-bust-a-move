@@ -1,7 +1,7 @@
-﻿var Flipbook = (function () {
+var Flipbook = (function () {
     function Flipbook(imageBatch, baseName, frameCount, digits) {
         this.frames = [];
-        for (var i = 1; i <= frameCount; ++i) {
+        for (var i = 0; i < frameCount; ++i) {
             var number = i.toString();
             while (number.length < digits) {
                 number = "0" + number;
@@ -34,11 +34,15 @@
         }
     };
     
-    Flipbook.prototype.draw = function(context, playback, location, width, height, center) {
-        var index = Math.min(this.frames.length - 1, Math.floor(playback.elapsed / playback.timePerFrame)),
-            x = location.x - (center ? width * 0.5 : 0),
-            y = location.y - (center ? height * 0.5 : 0);
-        context.drawImage(this.frames[index], x, y, width, height);
+    Flipbook.prototype.draw = function(context, playback, x, y, center, width, height) {
+        if (!width) {
+            width = this.frames[0].width;
+        }
+        if (!height) {
+            height = this.frames[0].height;
+        }
+        var index = Math.min(this.frames.length - 1, Math.floor(playback.elapsed / playback.timePerFrame));
+        context.drawImage(this.frames[index], x - (center ? width * 0.5 : 0), y - (center ? height * 0.5 : 0), width, height);
     };
     
     return Flipbook;
