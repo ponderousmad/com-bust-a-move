@@ -62,6 +62,10 @@ var DRAW = (function () {
         context.drawImage(image, x - image.width * 0.5, y - image.height * 0.5);
     }
     
+    function drawCenteredScaled(context, image, x, y, width, height) {
+        context.drawImage(image, x - width * 0.5, y - height * 0.5, width, height);
+    }
+    
     function drawTextCentered(context, text, x, y, fill, shadow, offset) {
         context.textAlign = "center";
         if (shadow) {
@@ -79,6 +83,7 @@ var DRAW = (function () {
     
     return {
         centered: drawCentered,
+        centeredScaled: drawCenteredScaled,
         centeredText: drawTextCentered
     };
 }());

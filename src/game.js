@@ -2,7 +2,8 @@
     "use strict";
     
     var loader = new ImageBatch("images/"),
-        fire = loader.load("fire.png"),
+        fire = new Flipbook(loader, "fire1/fire.png"),
+        background = loader.load("bg.png"),
         p1Images = {
             U: loader.load("up.png"),
             D: loader.load("down.png"),
@@ -32,7 +33,9 @@
         },
         player1 = new Player([KEYS.Up, KEYS.Down, KEYS.Left, KEYS.Right], p1Images, 1),
         player2 = new Player(["W".charCodeAt(), "S".charCodeAt(), "A".charCodeAt(), "D".charCodeAt()], p2Images, -1),
-        twoPlayer = true;
+        twoPlayer = true,
+        FIRE_FRAME_TIME = 80,
+        BACKGROUND_PIXEL_WIDTH = 300;
     
     function Sequence() {
         this.notes = [];
@@ -52,17 +55,35 @@
         keyboardState.postUpdate();
     }
     
+    function pixelated(context, drawPixels) {
+        var smooth = !drawPixels
+        context.mozImageSmoothingEnabled = smooth;
+        context.webkitImageSmoothingEnabled = smooth;
+        context.msImageSmoothingEnabled = smooth;
+        context.imageSmoothingEnabled = smooth;
+    }
+    
     function draw(context, width, height) {
-        var centerX = width * 0.5,
-            centerY = height * 0.5;
+        var centerX = 0,
+            centerY = 0,
+            pixelSize = width / BACKGROUND_PIXEL_WIDTH;
+        
+        context.save();        
+        pixelated(context, true);
+        context.scale(pixelSize, pixelSize);
+        context.translate(BACKGROUND_PIXEL_WIDTH * 0.5, (height * 0.5) / pixelSize);
+
+        DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, background.height / pixelSize);
+        
         context.font = "50px serif";
         if (loader.loaded) {
-            DRAW.centered(context, fire, centerX, centerY);
+            //DRAW.centered(context, fire, centerX, centerY);
             player1.draw(context, centerX, centerY);
             if (twoPlayer) {
                 player2.draw(context, centerX, centerY);
             }
         }
+        context.restore();
         
         // DRAW.centeredText(context, "Com-bust-a-move", centerX, centerY, "black", "white", 2);
     }

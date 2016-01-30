@@ -1,10 +1,10 @@
 var Player = (function () {
     "use strict";
     
-    var noteSpacing = 40,
+    var noteSpacing = 24,
         KEY_DRAW_FOR = 250,
-        BASE_OFFSET = 150,
-        TOP = -60,
+        BASE_OFFSET = 50,
+        TOP = -20,
         LONG_PAST = 100000,
         bell = new AUDIO.SoundEffect("audio/Bell_E.wav"),
         NOTE_LIST = ["U", "D", "L", "R"];
