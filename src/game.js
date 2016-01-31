@@ -57,6 +57,7 @@
         if (music.isLoaded() && !music.playing) {
             music.setVolume(0.25);
             music.play();
+            ryhthm.restart();
         }
         GAMEPLAY.updateDances(elapsed);
     }

@@ -98,6 +98,7 @@ var GAMEPLAY = (function () {
         this.jump = null;
         this.lastBeat = rhythm.beatNumber(TIMING.now(), BEAT_TOLERANCE);
         this.onBeat = false;
+        this.pressOnBeat = false;
     }
     
     Player.prototype.drawSequence = function (context, centerX, centerY) {
@@ -113,7 +114,11 @@ var GAMEPLAY = (function () {
         this.drawSequence(context, centerX, centerY);
         
         if (this.onBeat) {
-            context.fillStyle = "red";
+            if (this.pressOnBeat) {
+                context.fillStyle = "green";
+            } else {
+                context.fillStyle = "red";
+            }
             context.fillRect(centerX + BASE_OFFSET * this.offsetDirection, centerY + PRESSLINE, 100 * this.offsetDirection, 1);
         }
         context.font = "5px serif";
@@ -137,7 +142,8 @@ var GAMEPLAY = (function () {
         if (keyboard.wasAsciiPressed(letter)) {
             var time = keyboard.keyTime(letter.charCodeAt());
             if (this.rhythm.onBeat(time, BEAT_TOLERANCE)) {
-                if (this.rhythm.beatNumber(time, BEAT_TOLERANCE) > this.lastBeat) {
+                this.pressOnBeat = true;
+                if (this.rhythm.beatNumber(time, BEAT_TOLERANCE) >= this.lastBeat) {
                     return true;
                 } else {
                     this.lostBeat();
@@ -177,7 +183,7 @@ var GAMEPLAY = (function () {
         }
         var beats = 0;
         for (var b = 0; b < this.beatKeys.length; ++b) {
-            if (this.updateLetter(this.letters[b], keyboard, false)) {
+            if (this.updateLetter(this.beatKeys[b], keyboard, false)) {
                 beats += 1;
             }
         }
@@ -197,6 +203,7 @@ var GAMEPLAY = (function () {
         if (beat > this.lastBeat) {
             this.lostBeat();
             this.lastBeat = beat;
+            this.pressOnBeat = false;
         }
         
         this.onBeat = this.rhythm.onBeat(now, BEAT_TOLERANCE);

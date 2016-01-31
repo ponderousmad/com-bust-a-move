@@ -20,5 +20,9 @@ var Rhythm = (function () {
         return Math.floor(((time - this.start) / this.period) + tolerance);
     };
     
+    Rhythm.prototype.restart = function () {
+        this.start = TIMING.now();
+    };
+    
     return Rhythm;
 }());
