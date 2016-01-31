@@ -1,26 +1,7 @@
 (function () {
     "use strict";
     
-    var loader = new ImageBatch("images/"),
-        fire = new Flipbook(loader, "fire1/fire_", 16, 2),
-        background = loader.load("bg.png"),
-        p1Images = {
-            U: loader.load("up.png"),
-            D: loader.load("down.png"),
-            L: loader.load("left.png"),
-            R: loader.load("right.png")
-        },
-        p2Images = {
-            U: loader.load("w.png"),
-            D: loader.load("s.png"),
-            L: loader.load("a.png"),
-            R: loader.load("d.png")
-        },
-        keyboardState = new INPUT.KeyboardState(window),
-        mouseState = null,
-        touchState = null,
-        
-        KEYS = {
+    var KEYS = {
             Up : 38,
             Down : 40,
             Left : 37,
@@ -30,21 +11,35 @@
             LT : 188,
             GT : 190
         },
-        player1 = new GAMEPLAY.Player([KEYS.Up, KEYS.Down, KEYS.Left, KEYS.Right], p1Images, 1),
-        player2 = new GAMEPLAY.Player(["W".charCodeAt(), "S".charCodeAt(), "A".charCodeAt(), "D".charCodeAt()], p2Images, -1),
-        twoPlayer = true,
         FIRE_FRAME_TIME = 80,
         FIRE_WIDTH = 106,
         FIRE_HEIGHT = FIRE_WIDTH,
         BACKGROUND_PIXEL_WIDTH = 300,
+        
+        PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F", "C"],
+        PLAYER2_LETTERS = ["O", "I", "U", "Y", "K", "J", "H", "G", "B"],
+
+        loader = new ImageBatch("images/"),
+        fire = new Flipbook(loader, "fire1/fire_", 16, 2),
+        background = loader.load("bg.png"),
+        letterImages = {},
+        keyboardState = new INPUT.KeyboardState(window),
+        mouseState = null,
+        touchState = null,
+        ryhthm = new Rhythm(571),
+        
+        player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, ryhthm, letterImages, -1),
+        player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, ryhthm, letterImages, 1),
+        twoPlayer = true,
         music = new AUDIO.Music("audio/mus/musLoop05.ogg"),
         fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true);
     
-    function Sequence() {
-        this.notes = [];
-    }
-    
-    loader.commit();
+    (function () {
+        for (var letter = "A"; letter <= "Z"; letter = String.fromCharCode(letter.charCodeAt() + 1)) {
+             letterImages[letter] = loader.load("font/" + letter.toLowerCase() + ".png");
+        }
+        loader.commit();
+    }());
     
     function update() {
         var now = TIMING.now(),
@@ -63,11 +58,11 @@
             music.setVolume(0.25);
             music.play();
         }
-        GAMEPLAY.updateDancers(elapsed);
+        GAMEPLAY.updateDances(elapsed);
     }
     
     function pixelated(context, drawPixels) {
-        var smooth = !drawPixels
+        var smooth = !drawPixels;
         context.mozImageSmoothingEnabled = smooth;
         context.webkitImageSmoothingEnabled = smooth;
         context.msImageSmoothingEnabled = smooth;

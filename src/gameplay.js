@@ -2,45 +2,45 @@ var GAMEPLAY = (function () {
     "use strict";
     
     var loader = new ImageBatch("images/"),
-        noteSpacing = 20,
+        flareSound = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.ogg"),
+        wrongSound = new AUDIO.SoundEffect("audio/sfx/sfxDingWrong.ogg"),
+        dances = [
+            new Dance(loader, "dancers/amy_dance_"),
+            new Dance(loader, "dancers/betty_dance_"),
+            new Dance(loader, "dancers/charlie_dance_"),
+            new Dance(loader, "dancers/dave_dance_")
+        ],
+        DANCER_SPACING = 20,
         KEY_DRAW_FOR = 250,
         BASE_OFFSET = 37,
         BASELINE = 19,
-        NOTELINE = -25,
+        LETTERLINE = -25,
         PRESSLINE = 30,
-        DROP_TIME = 1000,
-        LONG_PAST = 100000,
+        FIRE_JUMP_TIME = 1000,
+        BEAT_TOLERANCE = 0.05,
         MIN_SEQUENCE_LENGTH = 3,
-        MAX_SEQUENCE_LENGTH = 6,
-        bell = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.ogg"),
-        dancers = {
-            U: new Dancer(loader, "guy1_"),
-            D: new Dancer(loader, "guy2_"),
-            L: new Dancer(loader, "guy3_"),
-            R: new Dancer(loader, "guy4_")
-        },
-        NOTE_LIST = ["U", "D", "L", "R"];
+        MAX_SEQUENCE_LENGTH = 6;
     
     loader.commit();
     
-    function getRandomNote() {
-        return NOTE_LIST[Math.floor(Math.random() * NOTE_LIST.length - 0.00001)];
+    function getRandomElement(list) {
+        return list[Math.floor(Math.random() * list.length - 0.00001)];
     }
     
-    function Beat() {
-        this.note = getRandomNote();
+    function Dancer(letters) {
+        this.letter = getRandomElement(letters);
+        this.dancer = getRandomElement(dances);
         this.status = false;
-        this.dancer = dancers[this.note];
     }
     
-    Beat.prototype.draw = function (context, images, x, y) {
-        var image = images[this.note],
+    Dancer.prototype.draw = function (context, images, x, y) {
+        var image = images[this.letter],
             width = image.width,
             height = image.height;
         
         this.dancer.draw(context, x, y + BASELINE);
         
-        y += NOTELINE;
+        y += LETTERLINE;
         
         if (this.status) {
             context.fillStyle = "rgba(0,255,0,0.25)";
@@ -50,133 +50,173 @@ var GAMEPLAY = (function () {
         DRAW.centered(context, image, x, y);
     };
     
-    Beat.prototype.check = function (note, now, elapsed) {
-        if (this.note === note) {
-            this.status = true;
+    Dancer.prototype.check = function (letter) {
+        if (this.letter === letter) {
+            if (!this.status) {
+                this.status = true;
+                return true;
+            }
+        }
+        return false;
+    };
+    
+    Dancer.prototype.reset = function () {
+        if (this.status) {
+            this.status = false;
             return true;
         }
         return false;
     };
     
-    function BeatDrop() {
-        this.remaining = DROP_TIME;
+    function FireJump() {
+        this.remaining = FIRE_JUMP_TIME;
     }
     
-    BeatDrop.prototype.update = function (elapsed) {
+    FireJump.prototype.update = function (elapsed) {
         this.remaining -= elapsed;
         return this.remaining <= 0;
-    }
+    };
     
-    function createSequence(length) {
+    function createSequence(letters, length) {
         var sequence = [];
         for (var c = 0; c < length; ++c) {
-            sequence.push(new Beat());
+            sequence.push(new Dancer(letters));
         }
         return sequence;
     }
     
-    function Player(keys, images, offsetDirection) {
-        this.keyMap = {
-            U: keys[0],
-            D: keys[1],
-            L: keys[2],
-            R: keys[3]
-        };
+    function Player(beatKeys, letters, rhythm, images, offsetDirection) {
+        this.beatKeys = beatKeys;
+        this.letters = letters;
+        this.rhythm = rhythm;
+        
         this.images = images;
         this.offsetDirection = offsetDirection;
         
-        this.resetLastPressed();
-        
         this.sequenceLength = MIN_SEQUENCE_LENGTH;
-        this.sequence = createSequence(this.sequenceLength);
-        this.step = 0;
-        this.endSequence = null;
-        this.arrowOffset = 0;
+        this.sequence = createSequence(this.letters, this.sequenceLength);
+        this.jump = null;
+        this.lastBeat = rhythm.beatNumber(TIMING.now());
+        this.onBeat = false;
     }
-    
-    Player.prototype.resetLastPressed = function () {
-        this.lastPressed = {
-            U: LONG_PAST,
-            D: LONG_PAST,
-            L: LONG_PAST,
-            R: LONG_PAST
-        };
-    };
-    
-    Player.prototype.drawPressedNote = function (context, centerX, centerY, note) {
-        if (this.lastPressed[note] < KEY_DRAW_FOR) {
-            var offset = BASE_OFFSET + (this.step + this.arrowOffset) * noteSpacing;
-            DRAW.centered(context, this.images[note], centerX + offset * this.offsetDirection, centerY + PRESSLINE);
-        }
-    };
     
     Player.prototype.drawSequence = function (context, centerX, centerY) {
         var offset = BASE_OFFSET;
         for (var i = 0; i < this.sequence.length; ++i) {
-            var beat = this.sequence[i];
-            beat.draw(context, this.images, centerX + offset * this.offsetDirection, centerY);
-            offset += noteSpacing;
+            var dancer = this.sequence[i];
+            dancer.draw(context, this.images, centerX + offset * this.offsetDirection, centerY);
+            offset += DANCER_SPACING;
         }
     };
     
     Player.prototype.draw = function (context, centerX, centerY) {
-        for (var n = 0; n < NOTE_LIST.length; ++n) {
-            this.drawPressedNote(context, centerX, centerY, NOTE_LIST[n]);
-        }
         this.drawSequence(context, centerX, centerY);
+        
+        if (this.onBeat) {
+            context.fillStyle = "red";
+            context.fillRect(BASE_OFFSET * this.offsetDirection, PRESSLINE, 100 * this.offsetDirection, 1);
+        }
     };
     
-    Player.prototype.sequencePressed = function(note, now, elapsed) {
-        if (this.step < this.sequence.length) {
-            var beat = this.sequence[this.step];
-            if (beat.check(note, now, elapsed)) {
-                this.step += 1;
-                if (this.step == this.sequence.length) {
-                    this.endSequence = new BeatDrop();
-                    bell.play();
+    Player.prototype.sequencePressed = function(letter) {
+        for (var i = 0; i < this.sequence.length; ++i) {
+            var dancer = this.sequence[this.step];
+            if (dancer.letter === letter) {
+                if(dancer.check(letter)) {
+                    return true;
                 }
-                this.arrowOffset = -1;
-            } else {
-                this.arrowOffset = 0;
+                return false;
             }
         }
+        return false;
     };
     
-    Player.prototype.updateNote = function(note, now, elapsed, keyboard) {
-        var keyCode = this.keyMap[note];
-        if (keyboard.wasKeyPressed(keyCode)) {
-            this.lastPressed[note] = now - keyboard.keyTime(keyCode);
-            this.sequencePressed(note);
-        } else if (this.lastPressed[note] > 0) {
-            this.lastPressed[note] += elapsed;
+    Player.prototype.updateLetter = function (letter, keyboard) {
+        if (keyboard.wasAsciiPressed(letter)) {
+            var time = keyboard.keyTime(letter.charCodeAt());
+            if (this.rhythm.onBeat(time, BEAT_TOLERANCE)) {
+                if (this.rhythm.beatNumber(time) > this.lastBeat) {
+                    return true;
+                } else {
+                    this.lostBeat();
+                }
+            } else {
+                this.lostBeat();
+                return false;
+            }
         }
+        return false;
+    };
+    
+    Player.prototype.lostBeat = function() {
+        var resetCount = 0;
+        for (var i = 0; i < this.sequence.length; ++i) {
+            var dancer = this.sequence[i];
+            if (dancer.reset()) {
+                resetCount += 1;
+            }
+        }
+        if (resetCount > 0) {
+            wrongSound.play();
+        }
+    };
+    
+    Player.prototype.sacrifice = function() {
+        this.jump = new FireJump();
     };
     
     Player.prototype.update = function (now, elapsed, keyboard) {
-        for (var n = 0; n < NOTE_LIST.length; ++n) {
-            this.updateNote(NOTE_LIST[n], now, elapsed, keyboard);
+        var pressed = [];
+        for (var l = 0; l < this.letters.length; ++l) {
+            var letter = this.letters[l];
+            if (this.updateLetter(letter, keyboard)) {
+                pressed.push(letter);
+            }
+        }
+        var beats = 0;
+        for (var b = 0; b < this.beatKeys.length; ++b) {
+            if (this.updateLetter(this.letters[b], keyboard, false)) {
+                beats += 1;
+            }
+        }
+        if (beats > 0 && pressed.length > 0) {
+            this.lostBeat();
+        } else if(beats > 2) {
+            this.sacrifice();
+        } else if(pressed.length === 1) {
+            if(this.sequencePressed(pressed[0])) {
+                this.beatNumber += 1;
+            } else {
+                this.lostBeat();
+            }
         }
         
-        if (this.endSequence !== null) {
-            if (this.endSequence.update(elapsed)) {
-                this.endSequence = null;
+        var beat = this.rhythm.beatNumber(now, BEAT_TOLERANCE);
+        if (beat > this.beatNumber) {
+            this.lostBeat();
+        }
+        
+        this.onBeat = this.rhythm.onBeat(now, BEAT_TOLERANCE);
+    
+        if (this.jump !== null) {
+            if (this.jump.update(elapsed)) {
+                this.jump = null;
                 if (this.sequenceLength < MAX_SEQUENCE_LENGTH) {
                     this.sequenceLength += 1;
                 }
-                this.step = 0;
-                this.sequence = createSequence(this.sequenceLength);
+                this.sequence = createSequence(this.letters, this.sequenceLength);
             }
         }
     };
-        
-    function updateDancers(elapsed) {
-        for (var n = 0; n < NOTE_LIST.length; ++n) {
-            dancers[NOTE_LIST[n]].update(elapsed);
+
+    function updateDances(elapsed) {
+        for (var d = 0; d < dances.length; ++d) {
+            dances[d].update(elapsed);
         }
     }
     
     return {
         Player: Player,
-        updateDancers: updateDancers
+        updateDances: updateDances
     };
 }());
