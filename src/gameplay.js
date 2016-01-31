@@ -155,8 +155,9 @@ var GAMEPLAY = (function () {
         return sequence;
     };
     
-    function Player(beatKeys, letters, tints, rhythm, avatar, images, offsetDirection) {
+    function Player(beatKeys, cashinKey, letters, tints, rhythm, avatar, images, offsetDirection) {
         this.beatKeys = beatKeys;
+        this.cashinKey = cashinKey;
         this.letters = letters;
         this.rhythm = rhythm;
         this.tints = tints;
@@ -357,7 +358,7 @@ var GAMEPLAY = (function () {
         
         if (this.activeBeats.length > 0 && pressed.length > 0) {
             this.lostBeat("Too many letters");
-        } else if(this.activeBeats.length > 1) {
+        } else if(this.activeBeats.length > 1 || keyboard.wasAsciiPressed(this.cashinKey)) {
             this.sacrifice();
         } else if(pressed.length === 1) {
             var activated = this.sequencePressed(pressed[0]);

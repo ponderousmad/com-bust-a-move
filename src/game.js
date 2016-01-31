@@ -23,8 +23,8 @@
         CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
         CROWD_HEIGHT = 150,
         
-        PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F", "C"],
-        PLAYER2_LETTERS = ["O", "I", "U", "Y", "K", "J", "H", "G", "B"],
+        PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F"],
+        PLAYER2_LETTERS = ["O", "I", "U", "Y", "K", "J", "H", "G"],
         
         PLAYER1_TINTS = [
             [1.8, 0, 0],
@@ -63,8 +63,8 @@
         speedFactor = 1,
         inSync = false,
         
-        player1 = new GAMEPLAY.Player(["X", "Z"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, avatar, letterImages, -1),
-        player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, PLAYER2_TINTS, ryhthm, avatar, letterImages, 1),
+        player1 = new GAMEPLAY.Player(["X", "Z"], "C", PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, avatar, letterImages, -1),
+        player2 = new GAMEPLAY.Player(["N", "M"], "B", PLAYER2_LETTERS, PLAYER2_TINTS, ryhthm, avatar, letterImages, 1),
         twoPlayer = true,
         musicTracks = [],
         music = null,
