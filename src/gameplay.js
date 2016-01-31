@@ -22,7 +22,7 @@ var GAMEPLAY = (function () {
         FIRE_JUMP_TIME = 1000,
         BEAT_TOLERANCE = 0.4,
         STUN_DURATION = 1200,
-        MIN_SEQUENCE_LENGTH = 3,
+        MIN_SEQUENCE_LENGTH = 6,
         MAX_SEQUENCE_LENGTH = 6;
     
     for (var d = 1; d <= MAX_SEQUENCE_LENGTH; ++d) {
@@ -204,7 +204,7 @@ var GAMEPLAY = (function () {
             context.fillRect(centerX + BASE_OFFSET * this.offsetDirection, centerY + PRESSLINE, 100 * this.offsetDirection, 1);
         }
         context.fillStyle = "white";
-        context.font = "5px serif";
+        context.font = "20px monospace";
         DRAW.centeredText(context, this.score.toString(), (BASE_OFFSET + 50) * this.offsetDirection, centerY + PRESSLINE + 10);
     };
     
