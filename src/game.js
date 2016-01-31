@@ -26,7 +26,7 @@
         keyboardState = new INPUT.KeyboardState(window),
         mouseState = null,
         touchState = null,
-        ryhthm = new Rhythm(572),
+        ryhthm = new Rhythm(1144),
         inSync = false,
         
         player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, ryhthm, letterImages, -1),
@@ -60,8 +60,6 @@
             player2.update(now, elapsed, keyboardState);
         }
         
-        keyboardState.postUpdate();
-        
         fire.updatePlayback(elapsed, fireDraw);
         
         if (music.isLoaded() && !music.playing) {
@@ -70,6 +68,8 @@
             ryhthm.restart();
         }
         GAMEPLAY.updateDances(elapsed);
+        
+        keyboardState.postUpdate();
     }
     
     function pixelated(context, drawPixels) {
