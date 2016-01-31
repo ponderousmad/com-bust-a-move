@@ -199,18 +199,25 @@ var GAMEPLAY = (function () {
         }
         this.drawSequence(context, centerX, centerY);
         
-        var avatarCenter = centerX + 200 * this.offsetDirection
-            avatarBase = centerY + 100;
+        var avatarCenter = centerX + 110 * this.offsetDirection,
+            avatarBase = centerY + 60;
         
-        this.avatar.idle.draw(context, this.avatarIdle, avatarCenter, avatarBase);
-        DRAW.centered(context, this.avatar.bongo, avatarCenter, avatarBase);
+        
+        context.save()
+        context.translate(avatarCenter, 0);
+        if(this.offsetDirection < 0) {
+            context.scale(-1, 1);
+        }
+        this.avatar.idle.draw(context, this.avatarIdle, 6, avatarBase - 13, ALIGN.Center, null, null, this.tints[1]);
+        DRAW.centered(context, this.avatar.bongo, 0, avatarBase);
         
         if (this.leftSlap !== null) {
-            this.avatar.leftSlap.draw(context, this.leftSlap, avatarCenter, avatarBase, ALIGN.Bottom, null, null, this.tints[0])
+            this.avatar.leftSlap.draw(context, this.leftSlap, 0, avatarBase, ALIGN.Center)
         }
         if (this.rightSlap !== null) {
-            this.avatar.rightSlap.draw(context, this.rightSlap, avatarCenter, avatarBase, ALIGN.Bottom, null, null, this.tints[1]);
+            this.avatar.rightSlap.draw(context, this.rightSlap, 0, avatarBase, ALIGN.Center);
         }
+        context.restore();
         
         /*
         if (this.onBeat) {
@@ -331,7 +338,13 @@ var GAMEPLAY = (function () {
         }
         for (var b = 0; b < this.beatKeys.length; ++b) {
             if (this.updateLetter(this.beatKeys[b], keyboard, false)) {
+                if (b == 0) {
+                    this.leftSlap = this.avatar.leftSlap.setupPlayback(80, false);    
+                } else {
+                    this.rightSlap = this.avatar.rightSlap.setupPlayback(80, false);
+                }
                 this.activeBeats.push(b);
+                
             }
         }
         
@@ -393,7 +406,7 @@ var GAMEPLAY = (function () {
         this.avatar.idle.updatePlayback(elapsed, this.avatarIdle);
         if (this.leftSlap !== null) {
             if (this.avatar.leftSlap.updatePlayback(elapsed, this.leftSlap)) {
-                this.rightSlap = null;
+                this.leftSlap = null;
             }
         }
         if (this.rightSlap !== null) {

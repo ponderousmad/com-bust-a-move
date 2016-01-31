@@ -57,7 +57,7 @@
         speedFactor = 1,
         inSync = false,
         
-        player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, avatar, letterImages, -1),
+        player1 = new GAMEPLAY.Player(["X", "Z"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, avatar, letterImages, -1),
         player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, PLAYER2_TINTS, ryhthm, avatar, letterImages, 1),
         twoPlayer = true,
         musicTracks = [],
