@@ -199,10 +199,18 @@ var GAMEPLAY = (function () {
         }
         this.drawSequence(context, centerX, centerY);
         
-        var avatarCenter = centerX + 200 * this.offsetDirection;
+        var avatarCenter = centerX + 200 * this.offsetDirection
+            avatarBase = centerY + 100;
         
-        this.avatar.idle.draw(context, this.avatarIdle, centerX + 200 * this.offsetDirection, centerY + 200);
-        DRAW.centered(context, 
+        this.avatar.idle.draw(context, this.avatarIdle, avatarCenter, avatarBase);
+        DRAW.centered(context, this.avatar.bongo, avatarCenter, avatarBase);
+        
+        if (this.leftSlap !== null) {
+            this.avatar.leftSlap.draw(context, this.leftSlap, avatarCenter, avatarBase, ALIGN.Bottom, null, null, this.tints[0])
+        }
+        if (this.rightSlap !== null) {
+            this.avatar.rightSlap.draw(context, this.rightSlap, avatarCenter, avatarBase, ALIGN.Bottom, null, null, this.tints[1]);
+        }
         
         /*
         if (this.onBeat) {

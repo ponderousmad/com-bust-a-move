@@ -43,10 +43,10 @@
         drum = new Flipbook(loader, "drumbeat_", DRUM_FRAMES, 2),
         crowd = new Flipbook(loader, "crowd_bounce_", CROWD_FRAMES, 2),
         avatar = {
-            leftSlap: new Flipbook(loader, "slapl_", 6, 2),
-            rightSlap: new Flipbook(loader, "slapr_", 6, 2),
+            leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
+            rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),
             idle: new Flipbook(loader, "avatar_idle_", 4, 2),
-            bogo: loader.load("bongo.png")
+            bongo: loader.load("bongo/bongo.png")
         },
         background = loader.load("bg.png"),
         letterImages = {},
