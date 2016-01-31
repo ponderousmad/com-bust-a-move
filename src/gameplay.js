@@ -36,9 +36,10 @@ var GAMEPLAY = (function () {
         this.dance = getRandomElement(dances);
         this.tint = getRandomElement(tints);
         this.status = false;
+        this.jump = null;
     }
     
-    Dancer.prototype.draw = function (context, images, x, y, flip, jump) {
+    Dancer.prototype.draw = function (context, images, x, y, flip) {
         var image = images[this.letter],
             width = image.width,
             height = image.height;
@@ -48,7 +49,7 @@ var GAMEPLAY = (function () {
         if (!flip) {
             context.scale(-1, 1);
         }
-        this.dance.draw(context, 0, y + BASELINE, this.status, jump, this.tint);
+        this.dance.draw(context, 0, y + BASELINE, this.status, this.jump, this.tint);
         context.restore();
         
         y += LETTERLINE;
@@ -79,6 +80,10 @@ var GAMEPLAY = (function () {
         return this.status;
     };
     
+    Dancer.prototype.isJumping = function () {
+        return this.jump !== null;
+    };
+    
     Dancer.prototype.reset = function () {
         if (this.status) {
             this.status = false;
@@ -87,35 +92,39 @@ var GAMEPLAY = (function () {
         return false;
     };
     
-    Dancer.prototype.jump = function () {
-        flareSound.play();
-        return this.dance.startJump();
+    Dancer.prototype.sacrifice = function () {
+        this.jump = this.dance.startJump();
     };
     
-    Dancer.prototype.updateJump = function (elapsed, jump) {
-        return this.dance.updateJump(elapsed, jump);
+    Dancer.prototype.updateJump = function (elapsed) {
+        return this.dance.updateJump(elapsed, this.jump);
     };
     
     function letterInSequence(sequence, letter) {
         for (var i = 0; i < sequence.length; ++i) {
-            if (sequence[i].isLetter(letter)) {
+            var dancer = sequence[i];
+            if (dancer !== null && dancer.isLetter(letter)) {
                 return true;
             }
         }
         return false;
     }
     
+    Player.prototype.createDancer = function (sequence) {
+        var random = null;
+        while (random === null) {
+            random = new Dancer(this.letters, this.tints);
+            if (letterInSequence(sequence, random.letter)) {
+                random = null;
+            }
+        }
+        return random;
+    };
+    
     Player.prototype.createSequence = function (length) {
         var sequence = [];
         for (var c = 0; c < length; ++c) {
-            var random = null;
-            while (random === null) {
-                random = new Dancer(this.letters, this.tints);
-                if (letterInSequence(sequence, random.letter)) {
-                    random = null;
-                }
-            }
-            sequence.push(random);
+            sequence.push(this.createDancer(sequence));
         }
         return sequence;
     };
@@ -128,9 +137,8 @@ var GAMEPLAY = (function () {
         
         this.images = images;
         this.offsetDirection = offsetDirection;
-        
-        this.sequenceLength = MIN_SEQUENCE_LENGTH;
-        this.sequence = this.createSequence(this.sequenceLength);
+
+        this.sequence = this.createSequence(MIN_SEQUENCE_LENGTH);
         this.jump = null;
         this.onBeat = false;
         this.pressOnBeat = false;
@@ -171,7 +179,7 @@ var GAMEPLAY = (function () {
         DRAW.centeredText(context, this.score.toString(), (BASE_OFFSET + 50) * this.offsetDirection, centerY + PRESSLINE + 10);
     };
     
-    Player.prototype.activeDancers = function() {
+    Player.prototype.activeDancers = function () {
         var count = 0;
         for (var i = 0; i < this.sequence.length; ++i) {
             if (this.sequence[i].isActive()) {
@@ -181,7 +189,17 @@ var GAMEPLAY = (function () {
         return count;
     };
     
-    Player.prototype.sequencePressed = function(letter) {        
+    Player.prototype.jumping = function () {
+        var count = 0;
+        for (var i = 0; i < this.sequence.length; ++i) {
+            if (this.sequence[i].isJumping()) {
+                ++count;
+            }
+        }
+        return count;
+    };
+    
+    Player.prototype.sequencePressed = function (letter) {        
         for (var i = 0; i < this.sequence.length; ++i) {
             var dancer = this.sequence[i];
             if (dancer.isLetter(letter)) {
@@ -214,12 +232,12 @@ var GAMEPLAY = (function () {
         return false;
     };
     
-    Player.prototype.lostBeat = function(context) {
+    Player.prototype.lostBeat = function (context) {
         if (context) {
             console.log("Lost beat: " + context);
         }
         this.sequenceBeat = null;
-        if (this.jump !== null) {
+        if (this.jumping() > 0) {
             return;
         }
         var resetCount = 0;
@@ -238,16 +256,19 @@ var GAMEPLAY = (function () {
         }
     };
     
-    Player.prototype.sacrifice = function() {
+    Player.prototype.sacrifice = function () {
         console.log("attempt sacrifice");
         this.activeBeats = [];
+        var jumped = 0;
         for (var i = 0; i < this.sequence.length; ++i) {
             if (this.sequence[i].isActive()) {
-                this.jump = this.sequence[i].jump();
-                var active = this.activeDancers();
-                this.score += active > 1 ? Math.pow(2, active) : active;
-                break;
+                this.sequence[i].sacrifice();
+                jumped += 1;
             }
+        }
+        if (jumped > 0) {
+            flareSound.play();
+            this.score += jumped > 1 ? Math.pow(2, jumped) : jumped;
         }
     };
     
@@ -296,13 +317,17 @@ var GAMEPLAY = (function () {
             this.lostBeat();
         }
     
-        if (this.jump !== null) {
-            if (this.sequence[0].updateJump(elapsed, this.jump)) {
-                this.jump = null;
-                if (this.sequenceLength < MAX_SEQUENCE_LENGTH) {
-                    this.sequenceLength += 1;
+        if (this.jumping() > 0) {
+            var addDancer = false;
+            for (var i = 0; i < this.sequence.length; ++i) {
+                var dancer = this.sequence[i];
+                if (dancer.updateJump(elapsed)) {
+                    addDancer = true;
+                    this.sequence[i] = this.createDancer(this.sequence);
                 }
-                this.sequence = this.createSequence(this.sequenceLength);
+            }
+            if (addDancer && this.sequence.length < MAX_SEQUENCE_LENGTH) {
+                this.sequence.push(this.createDancer(this.sequence));
             }
         }
     };

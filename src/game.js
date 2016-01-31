@@ -52,7 +52,7 @@
         for (var letter = "A"; letter <= "Z"; letter = String.fromCharCode(letter.charCodeAt() + 1)) {
              letterImages[letter] = loader.load("font/" + letter.toLowerCase() + ".png");
         }
-        for (var track = 0; track < TRACKS; ++track) {
+        for (var track = 1; track <= TRACKS; ++track) {
             musicTracks.push(new AUDIO.Music("audio/mus/musLoop0" + track + ".ogg"));
         }
         music = GAMEPLAY.randomElement(musicTracks);
@@ -72,9 +72,9 @@
             }
         }
         
-        player1.update(now, elapsed, keyboardState);
+        player1.update(now, elapsed, keyboardState, player2);
         if (twoPlayer) {
-            player2.update(now, elapsed, keyboardState);
+            player2.update(now, elapsed, keyboardState, player1);
         }
         
         fire.updatePlayback(elapsed, fireDraw);
