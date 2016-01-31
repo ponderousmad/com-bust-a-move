@@ -70,13 +70,14 @@
         musicTracks = [],
         music = null,
         menu = titleScreen.setupPlayback(80, true),
+        menuDelay = 5000,
         fireDraw = fire.setupPlayback(2 * BASE_RHYTHM / FIRE_FRAMES, true),
         drumDraw = null,
         crowdDraw = null;
     
     function resetRhythm() {
         var rate = BASE_RHYTHM * speedFactor;
-        drumDraw = drum.setupPlayback(rate / DRUM_FRAMES, true),
+        drumDraw = drum.setupPlayback(rate / DRUM_FRAMES, true);
         crowdDraw = crowd.setupPlayback(rate / CROWD_FRAMES, true);
         ryhthm.restart(BASE_RHYTHM * speedFactor);
         player1.sync();
@@ -101,17 +102,9 @@
         
         if (menu !== null) {
             titleScreen.updatePlayback(elapsed, menu);
-            
-            if (keyboardState.wasAsciiPressed("1")) {
-                speedFactor = 2;
+            menuDelay -= elapsed;
+            if (menuDelay < 0) {
                 menu = null;
-            } else if (keyboardState.wasAsciiPressed("2")) {
-                speedFactor = 1;
-                menu = null;
-            }
-            if (menu === null) {
-                resetRhythm();
-                inSync = false;
             }
         } else {
             if (!inSync) {
