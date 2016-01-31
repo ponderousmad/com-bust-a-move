@@ -132,7 +132,8 @@ var GAMEPLAY = (function () {
     }
     
     Player.prototype.sync = function() {
-        this.lastBeat = this.rhythm.beatNumber(TIMING.now(), this.beatTolerance);  
+        this.lastBeat = this.rhythm.beatNumber(TIMING.now(), this.beatTolerance);
+        this.sequenceBeat = null;
     };
     
     Player.prototype.drawSequence = function (context, centerX, centerY) {
@@ -175,10 +176,12 @@ var GAMEPLAY = (function () {
     
     Player.prototype.updateLetter = function (letter, keyboard) {
         if (keyboard.wasAsciiPressed(letter)) {
+            console.log("Pressed this frame: " + letter);
             var time = keyboard.keyTime(letter.charCodeAt());
             if (this.rhythm.onBeat(time, this.beatTolerance)) {
                 this.pressOnBeat = true;
-                if (this.rhythm.beatNumber(time, this.beatTolerance) >= this.lastBeat) {
+                if (this.rhythm.beatNumber(time, this.beatTolerance) > this.sequenceBeat) {
+                    console.log("Sequence on beat");
                     return true;
                 } else {
                     this.lostBeat("Beat repeat");
@@ -195,6 +198,7 @@ var GAMEPLAY = (function () {
         if (context) {
             console.log("Lost beat: " + context);
         }
+        this.sequenceBeat = null;
         if (this.jump !== null) {
             return;
         }
@@ -238,26 +242,34 @@ var GAMEPLAY = (function () {
                 beats += 1;
             }
         }
+        
+        var beat = this.rhythm.beatNumber(now, this.beatTolerance);
+        
         if (beats > 0 && pressed.length > 0) {
             this.lostBeat("Too many letters");
         } else if(beats > 1) {
             this.sacrifice();
         } else if(pressed.length === 1) {
             if(this.sequencePressed(pressed[0])) {
-                this.lastBeat += 1;
+                this.sequenceBeat = beat;
             } else {
                 this.lostBeat("letter repeat");
             }
+        } else if(beats > 0) {
+            this.sequenceBeat = beat;
         }
         
+        this.onBeat = this.rhythm.onBeat(now, this.beatTolerance);
+        
         var beat = this.rhythm.beatNumber(now, this.beatTolerance);
-        if (beat > this.lastBeat) {
-            this.lostBeat();
+        if (!this.onBeat && beat > this.lastBeat) {
             this.lastBeat = beat;
             this.pressOnBeat = false;
         }
         
-        this.onBeat = this.rhythm.onBeat(now, this.beatTolerance);
+        if (this.onBeat && this.lastBeat > this.sequenceBeat) {
+            this.lostBeat();
+        }
     
         if (this.jump !== null) {
             if (this.sequence[0].updateJump(elapsed, this.jump)) {
