@@ -11,16 +11,20 @@
             LT : 188,
             GT : 190
         },
+        BACKGROUND_PIXEL_WIDTH = 300,
         BASE_RHYTHM = 572,
         FIRE_FRAMES = 16,
         FIRE_FRAME_TIME = 2 * BASE_RHYTHM / FIRE_FRAMES,
-        DRUM_FRAMES = 12,
-        DRUM_FRAME_TIME = BASE_RHYTHM / DRUM_FRAMES,
         FIRE_WIDTH = 106,
         FIRE_HEIGHT = FIRE_WIDTH,
+        DRUM_FRAMES = 12,
+        DRUM_FRAME_TIME = BASE_RHYTHM / DRUM_FRAMES,
         DRUM_WIDTH = 160,
         DRUM_HEIGHT = 40,
-        BACKGROUND_PIXEL_WIDTH = 300,
+        CROWD_FRAMES = 8,
+        CROWD_FRAME_TIME = BASE_RHYTHM / CROWD_FRAMES,
+        CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
+        CROWD_HEIGHT = 150,
         
         PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F", "C"],
         PLAYER2_LETTERS = ["O", "I", "U", "Y", "K", "J", "H", "G", "B"],
@@ -40,6 +44,7 @@
         loader = new ImageBatch("images/"),
         fire = new Flipbook(loader, "fire1/fire_", FIRE_FRAMES, 2),
         drum = new Flipbook(loader, "drumbeat_", DRUM_FRAMES, 2),
+        crowd = new Flipbook(loader, "crowd_bounce_", CROWD_FRAMES, 2),
         background = loader.load("bg.png"),
         letterImages = {},
         keyboardState = new INPUT.KeyboardState(window),
@@ -54,7 +59,8 @@
         musicTracks = [],
         music = null,
         fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true),
-        drumDraw = drum.setupPlayback(DRUM_FRAME_TIME, true);
+        drumDraw = drum.setupPlayback(DRUM_FRAME_TIME, true),
+        crowdDraw = crowd.setupPlayback(CROWD_FRAME_TIME, true);
     
     (function () {
         for (var letter = "A"; letter <= "Z"; letter = String.fromCharCode(letter.charCodeAt() + 1)) {
@@ -87,6 +93,7 @@
         
         fire.updatePlayback(elapsed, fireDraw);
         drum.updatePlayback(elapsed, drumDraw);
+        crowd.updatePlayback(elapsed, crowdDraw);
         
         if (music.isLoaded() && !music.playing) {
             music.play();
@@ -119,6 +126,7 @@
 
         if (loader.loaded) {
             DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
+            crowd.draw(context, crowdDraw, centerX, centerY + 2, ALIGN.Center, CROWD_WIDTH, CROWD_HEIGHT);
             fire.draw(context, fireDraw, centerX, centerY - 15, ALIGN.Center, FIRE_WIDTH, FIRE_HEIGHT);
             drum.draw(context, drumDraw, centerX, centerY + 40, ALIGN.Center, DRUM_WIDTH, DRUM_HEIGHT);
             player1.draw(context, centerX, centerY);
