@@ -4,7 +4,7 @@ var Dance = (function () {
     var DANCE_FRAME_TIME = 80;
     
     function Dance(loader, baseName) {
-        this.idle = new Flipbook(loader, baseName + "", 1, 2);
+        this.idle = new Flipbook(loader, baseName + "", 4, 2);
         this.idlePlay = this.idle.setupPlayback(DANCE_FRAME_TIME, true);
     }
     
