@@ -22,6 +22,7 @@
         CROWD_FRAMES = 8,
         CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
         CROWD_HEIGHT = 150,
+        WIN_SCORE = 3,
         
         PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F"],
         PLAYER2_LETTERS = ["O", "I", "U", "Y", "K", "J", "H", "G"],
@@ -43,6 +44,9 @@
         drum = new Flipbook(loader, "drumbeat_", DRUM_FRAMES, 2),
         crowd = new Flipbook(loader, "crowd_bounce_", CROWD_FRAMES, 2),
         titleScreen = new Flipbook(loader, "title_", 6, 2),
+        winScreen = new Flipbook(loader, "win_image_", 6, 2),
+        win1 = loader.load("win_p1.png"),
+        win2 = loader.load("win_p2.png"),
         avatar = {
             leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
             rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),
@@ -71,6 +75,7 @@
         music = null,
         menu = titleScreen.setupPlayback(80, true),
         menuDelay = 5000,
+        winner = null,
         fireDraw = fire.setupPlayback(2 * BASE_RHYTHM / FIRE_FRAMES, true),
         drumDraw = null,
         crowdDraw = null;
@@ -101,10 +106,17 @@
             elapsed = TIMING.updateDelta(now);
         
         if (menu !== null) {
-            titleScreen.updatePlayback(elapsed, menu);
+            if (winner !== null) {
+                winScreen.updatePlayback(elapsed, menu);
+            } else {
+                titleScreen.updatePlayback(elapsed, menu);
+            }
             menuDelay -= elapsed;
             if (menuDelay < 0) {
                 menu = null;
+                winner = null;
+                player1.reset();
+                player2.reset();
             }
         } else {
             if (!inSync) {
@@ -117,6 +129,16 @@
             player1.update(now, elapsed, keyboardState, player2);
             if (twoPlayer) {
                 player2.update(now, elapsed, keyboardState, player1);
+            }
+            
+            if (player1.score > WIN_SCORE) {
+                winner = player1;
+            } else if(player2.score > WIN_SCORE) {
+                winner = player2;
+            }
+            if (winner !== null) {
+                menu = winScreen.setupPlayback(80, true);
+                menuDelay = 5000;
             }
 
             fire.updatePlayback(elapsed, fireDraw);
@@ -155,7 +177,16 @@
         if (loader.loaded) {
             DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
             if (menu !== null) {
-                titleScreen.draw(context, menu, 0, 0, ALIGN.Center);
+                if (winner !== null) {
+                    if (winner == player1) {
+                        DRAW.centered(context, win1, 0, 0);
+                    } else {
+                        DRAW.centered(context, win2, 0, 0);
+                    }
+                    winScreen.draw(context, menu, 0, 0, ALIGN.Center);
+                } else {
+                    titleScreen.draw(context, menu, 0, 0, ALIGN.Center);
+                }
             } else {
                 crowd.draw(context, crowdDraw, centerX, centerY + 2, ALIGN.Center, CROWD_WIDTH, CROWD_HEIGHT);
                 fire.draw(context, fireDraw, centerX, centerY - 15, ALIGN.Center, FIRE_WIDTH, FIRE_HEIGHT);

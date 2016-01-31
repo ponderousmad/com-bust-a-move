@@ -169,15 +169,19 @@ var GAMEPLAY = (function () {
         this.images = images;
         this.offsetDirection = offsetDirection;
 
-        this.sequence = this.createSequence(MIN_SEQUENCE_LENGTH);
         this.jump = null;
         this.onBeat = false;
         this.pressOnBeat = false;
         this.beatTolerance = BEAT_TOLERANCE;
-        this.score = 0;
-        this.activeBeats = [];
-        this.sync();
+        this.reset();
     }
+    
+    Player.prototype.reset = function() {
+        this.sequence = this.createSequence(MIN_SEQUENCE_LENGTH);
+        this.score = 0;
+        this.activeBeats = 0;
+        this.sync();
+    };
     
     Player.prototype.sync = function() {
         this.lastBeat = this.rhythm.beatNumber(TIMING.now(), this.beatTolerance);
