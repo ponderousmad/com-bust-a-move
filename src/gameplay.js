@@ -17,7 +17,7 @@ var GAMEPLAY = (function () {
         LETTERLINE = -25,
         PRESSLINE = 30,
         FIRE_JUMP_TIME = 1000,
-        BEAT_TOLERANCE = 0.05,
+        BEAT_TOLERANCE = 0.2,
         MIN_SEQUENCE_LENGTH = 3,
         MAX_SEQUENCE_LENGTH = 6;
     
@@ -96,7 +96,7 @@ var GAMEPLAY = (function () {
         this.sequenceLength = MIN_SEQUENCE_LENGTH;
         this.sequence = createSequence(this.letters, this.sequenceLength);
         this.jump = null;
-        this.lastBeat = rhythm.beatNumber(TIMING.now());
+        this.lastBeat = rhythm.beatNumber(TIMING.now(), BEAT_TOLERANCE);
         this.onBeat = false;
     }
     
@@ -114,13 +114,15 @@ var GAMEPLAY = (function () {
         
         if (this.onBeat) {
             context.fillStyle = "red";
-            context.fillRect(BASE_OFFSET * this.offsetDirection, PRESSLINE, 100 * this.offsetDirection, 1);
+            context.fillRect(centerX + BASE_OFFSET * this.offsetDirection, centerY + PRESSLINE, 100 * this.offsetDirection, 1);
         }
+        context.font = "5px serif";
+        DRAW.centeredText(context, this.lastBeat.toString(), (BASE_OFFSET + 50) * this.offsetDirection, centerY + PRESSLINE + 10);
     };
     
     Player.prototype.sequencePressed = function(letter) {
         for (var i = 0; i < this.sequence.length; ++i) {
-            var dancer = this.sequence[this.step];
+            var dancer = this.sequence[i];
             if (dancer.letter === letter) {
                 if(dancer.check(letter)) {
                     return true;
@@ -135,7 +137,7 @@ var GAMEPLAY = (function () {
         if (keyboard.wasAsciiPressed(letter)) {
             var time = keyboard.keyTime(letter.charCodeAt());
             if (this.rhythm.onBeat(time, BEAT_TOLERANCE)) {
-                if (this.rhythm.beatNumber(time) > this.lastBeat) {
+                if (this.rhythm.beatNumber(time, BEAT_TOLERANCE) > this.lastBeat) {
                     return true;
                 } else {
                     this.lostBeat();
@@ -185,15 +187,16 @@ var GAMEPLAY = (function () {
             this.sacrifice();
         } else if(pressed.length === 1) {
             if(this.sequencePressed(pressed[0])) {
-                this.beatNumber += 1;
+                this.lastBeat += 1;
             } else {
                 this.lostBeat();
             }
         }
         
         var beat = this.rhythm.beatNumber(now, BEAT_TOLERANCE);
-        if (beat > this.beatNumber) {
+        if (beat > this.lastBeat) {
             this.lostBeat();
+            this.lastBeat = beat;
         }
         
         this.onBeat = this.rhythm.onBeat(now, BEAT_TOLERANCE);

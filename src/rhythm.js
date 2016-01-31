@@ -3,7 +3,7 @@ var Rhythm = (function () {
     
     function Rhythm(period, start) {
         this.period = period;
-        this.start = 0;
+        this.start = TIMING.now();
     }
     
     Rhythm.prototype.onBeat = function (time, tolerance) {
