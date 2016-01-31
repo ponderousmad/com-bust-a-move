@@ -155,11 +155,15 @@ var GAMEPLAY = (function () {
         return sequence;
     };
     
-    function Player(beatKeys, letters, tints, rhythm, images, offsetDirection) {
+    function Player(beatKeys, letters, tints, rhythm, avatar, images, offsetDirection) {
         this.beatKeys = beatKeys;
         this.letters = letters;
         this.rhythm = rhythm;
         this.tints = tints;
+        this.avatar = avatar;
+        this.avatarIdle = avatar.idle.setupPlayback(80, true);
+        this.leftSlap = null;
+        this.rightSlap = null;
         
         this.images = images;
         this.offsetDirection = offsetDirection;
@@ -194,6 +198,11 @@ var GAMEPLAY = (function () {
             return;
         }
         this.drawSequence(context, centerX, centerY);
+        
+        var avatarCenter = centerX + 200 * this.offsetDirection;
+        
+        this.avatar.idle.draw(context, this.avatarIdle, centerX + 200 * this.offsetDirection, centerY + 200);
+        DRAW.centered(context, 
         
         /*
         if (this.onBeat) {
@@ -371,6 +380,18 @@ var GAMEPLAY = (function () {
         }
         if (addDancer && this.sequence.length < MAX_SEQUENCE_LENGTH) {
             this.sequence.push(this.createDancer(this.sequence));
+        }
+        
+        this.avatar.idle.updatePlayback(elapsed, this.avatarIdle);
+        if (this.leftSlap !== null) {
+            if (this.avatar.leftSlap.updatePlayback(elapsed, this.leftSlap)) {
+                this.rightSlap = null;
+            }
+        }
+        if (this.rightSlap !== null) {
+            if (this.avatar.rightSlap.updatePlayback(elapsed, this.rightSlap)) {
+                this.rightSlap = null;
+            }
         }
     };
 

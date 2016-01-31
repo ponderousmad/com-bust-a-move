@@ -42,6 +42,12 @@
         fire = new Flipbook(loader, "fire1/fire_", FIRE_FRAMES, 2),
         drum = new Flipbook(loader, "drumbeat_", DRUM_FRAMES, 2),
         crowd = new Flipbook(loader, "crowd_bounce_", CROWD_FRAMES, 2),
+        avatar = {
+            leftSlap: new Flipbook(loader, "slapl_", 6, 2),
+            rightSlap: new Flipbook(loader, "slapr_", 6, 2),
+            idle: new Flipbook(loader, "avatar_idle_", 4, 2),
+            bogo: loader.load("bongo.png")
+        },
         background = loader.load("bg.png"),
         letterImages = {},
         keyboardState = new INPUT.KeyboardState(window),
@@ -51,8 +57,8 @@
         speedFactor = 1,
         inSync = false,
         
-        player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, letterImages, -1),
-        player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, PLAYER2_TINTS, ryhthm, letterImages, 1),
+        player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, avatar, letterImages, -1),
+        player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, PLAYER2_TINTS, ryhthm, avatar, letterImages, 1),
         twoPlayer = true,
         musicTracks = [],
         music = null,
