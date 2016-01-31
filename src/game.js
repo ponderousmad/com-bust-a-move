@@ -26,7 +26,7 @@
         keyboardState = new INPUT.KeyboardState(window),
         mouseState = null,
         touchState = null,
-        ryhthm = new Rhythm(571),
+        ryhthm = new Rhythm(572),
         
         player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, ryhthm, letterImages, -1),
         player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, ryhthm, letterImages, 1),

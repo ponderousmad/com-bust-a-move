@@ -17,7 +17,7 @@ var GAMEPLAY = (function () {
         LETTERLINE = -25,
         PRESSLINE = 30,
         FIRE_JUMP_TIME = 1000,
-        BEAT_TOLERANCE = 0.2,
+        BEAT_TOLERANCE = 0.4,
         MIN_SEQUENCE_LENGTH = 3,
         MAX_SEQUENCE_LENGTH = 6;
     
@@ -99,6 +99,7 @@ var GAMEPLAY = (function () {
         this.lastBeat = rhythm.beatNumber(TIMING.now(), BEAT_TOLERANCE);
         this.onBeat = false;
         this.pressOnBeat = false;
+        this.firstPress = true;
     }
     
     Player.prototype.drawSequence = function (context, centerX, centerY) {
@@ -140,6 +141,11 @@ var GAMEPLAY = (function () {
     
     Player.prototype.updateLetter = function (letter, keyboard) {
         if (keyboard.wasAsciiPressed(letter)) {
+            if (this.firstPress) {
+                this.rhythm.restart();
+                this.firstPress = true;
+                this.lastBeat = 0;
+            }
             var time = keyboard.keyTime(letter.charCodeAt());
             if (this.rhythm.onBeat(time, BEAT_TOLERANCE)) {
                 this.pressOnBeat = true;
