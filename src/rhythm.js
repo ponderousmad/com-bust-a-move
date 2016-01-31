@@ -1,9 +1,8 @@
 var Rhythm = (function () {
     "use strict";
     
-    function Rhythm(period, start) {
-        this.period = period;
-        this.start = TIMING.now();
+    function Rhythm(period) {
+        this.restart(period);
     }
     
     Rhythm.prototype.onBeat = function (time, tolerance) {
@@ -20,7 +19,8 @@ var Rhythm = (function () {
         return Math.floor(((time - this.start) / this.period) + tolerance);
     };
     
-    Rhythm.prototype.restart = function () {
+    Rhythm.prototype.restart = function (period) {
+        this.period = period;
         this.start = TIMING.now();
     };
     

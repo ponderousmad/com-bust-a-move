@@ -14,15 +14,12 @@
         BACKGROUND_PIXEL_WIDTH = 300,
         BASE_RHYTHM = 572,
         FIRE_FRAMES = 16,
-        FIRE_FRAME_TIME = 2 * BASE_RHYTHM / FIRE_FRAMES,
         FIRE_WIDTH = 106,
         FIRE_HEIGHT = FIRE_WIDTH,
         DRUM_FRAMES = 12,
-        DRUM_FRAME_TIME = BASE_RHYTHM / DRUM_FRAMES,
         DRUM_WIDTH = 160,
         DRUM_HEIGHT = 40,
         CROWD_FRAMES = 8,
-        CROWD_FRAME_TIME = BASE_RHYTHM / CROWD_FRAMES,
         CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
         CROWD_HEIGHT = 150,
         
@@ -51,6 +48,7 @@
         mouseState = null,
         touchState = null,
         ryhthm = new Rhythm(572),
+        speedFactor = 1,
         inSync = false,
         
         player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, letterImages, -1),
@@ -58,9 +56,19 @@
         twoPlayer = true,
         musicTracks = [],
         music = null,
-        fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true),
-        drumDraw = drum.setupPlayback(DRUM_FRAME_TIME, true),
-        crowdDraw = crowd.setupPlayback(CROWD_FRAME_TIME, true);
+        menu = null,
+        fireDraw = fire.setupPlayback(2 * BASE_RHYTHM / FIRE_FRAMES, true),
+        drumDraw = null,
+        crowdDraw = null;
+    
+    function resetRhythm() {
+        var rate = BASE_RHYTHM * speedFactor;
+        drumDraw = drum.setupPlayback(rate / DRUM_FRAMES, true),
+        crowdDraw = crowd.setupPlayback(rate / CROWD_FRAMES, true);
+        ryhthm.restart(BASE_RHYTHM * speedFactor);
+        player1.sync();
+        player2.sync();
+    }
     
     (function () {
         for (var letter = "A"; letter <= "Z"; letter = String.fromCharCode(letter.charCodeAt() + 1)) {
@@ -71,35 +79,38 @@
         }
         music = GAMEPLAY.randomElement(musicTracks);
         loader.commit();
+        resetRhythm();
     }());
     
     function update() {
         var now = TIMING.now(),
             elapsed = TIMING.updateDelta(now);
         
-        if (!inSync) {
-            if (keyboardState.keysDown() > 0) {
-                ryhthm.restart();
-                player1.sync();
-                player2.sync();
-                inSync = true;
+        if (menu !== null) {
+            menu.update(elapsed);
+        } else {
+            if (!inSync) {
+                if (keyboardState.keysDown() > 0) {
+                    resetRhythm();
+                    inSync = true;
+                }
             }
+
+            player1.update(now, elapsed, keyboardState, player2);
+            if (twoPlayer) {
+                player2.update(now, elapsed, keyboardState, player1);
+            }
+
+            fire.updatePlayback(elapsed, fireDraw);
+            drum.updatePlayback(elapsed, drumDraw);
+            crowd.updatePlayback(elapsed, crowdDraw);
+
+            if (music.isLoaded() && !music.playing) {
+                music.play();
+                ryhthm.restart();
+            }
+            GAMEPLAY.updateDances(elapsed);
         }
-        
-        player1.update(now, elapsed, keyboardState, player2);
-        if (twoPlayer) {
-            player2.update(now, elapsed, keyboardState, player1);
-        }
-        
-        fire.updatePlayback(elapsed, fireDraw);
-        drum.updatePlayback(elapsed, drumDraw);
-        crowd.updatePlayback(elapsed, crowdDraw);
-        
-        if (music.isLoaded() && !music.playing) {
-            music.play();
-            ryhthm.restart();
-        }
-        GAMEPLAY.updateDances(elapsed);
         
         keyboardState.postUpdate();
     }
@@ -122,21 +133,22 @@
         pixelated(context, true);
         context.scale(pixelSize, pixelSize);
         context.translate(BACKGROUND_PIXEL_WIDTH * 0.5, (height * 0.5) / pixelSize);
-        context.font = "50px serif";
 
         if (loader.loaded) {
             DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
-            crowd.draw(context, crowdDraw, centerX, centerY + 2, ALIGN.Center, CROWD_WIDTH, CROWD_HEIGHT);
-            fire.draw(context, fireDraw, centerX, centerY - 15, ALIGN.Center, FIRE_WIDTH, FIRE_HEIGHT);
-            drum.draw(context, drumDraw, centerX, centerY + 40, ALIGN.Center, DRUM_WIDTH, DRUM_HEIGHT);
-            player1.draw(context, centerX, centerY);
-            if (twoPlayer) {
-                player2.draw(context, centerX, centerY);
+            if (menu !== null) {
+                menu.draw(context, width, height);
+            } else {
+                crowd.draw(context, crowdDraw, centerX, centerY + 2, ALIGN.Center, CROWD_WIDTH, CROWD_HEIGHT);
+                fire.draw(context, fireDraw, centerX, centerY - 15, ALIGN.Center, FIRE_WIDTH, FIRE_HEIGHT);
+                drum.draw(context, drumDraw, centerX, centerY + 40, ALIGN.Center, DRUM_WIDTH, DRUM_HEIGHT);
+                player1.draw(context, centerX, centerY);
+                if (twoPlayer) {
+                    player2.draw(context, centerX, centerY);
+                }
             }
         }
         context.restore();
-        
-        // DRAW.centeredText(context, "Com-bust-a-move", centerX, centerY, "black", "white", 2);
     }
     
     function safeWidth() {
