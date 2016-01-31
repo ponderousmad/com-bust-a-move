@@ -42,6 +42,7 @@
         fire = new Flipbook(loader, "fire1/fire_", FIRE_FRAMES, 2),
         drum = new Flipbook(loader, "drumbeat_", DRUM_FRAMES, 2),
         crowd = new Flipbook(loader, "crowd_bounce_", CROWD_FRAMES, 2),
+        titleScreen = new Flipbook(loader, "title_", 6, 2),
         avatar = {
             leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
             rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),
@@ -68,7 +69,7 @@
         twoPlayer = true,
         musicTracks = [],
         music = null,
-        menu = null,
+        menu = titleScreen.setupPlayback(80, true),
         fireDraw = fire.setupPlayback(2 * BASE_RHYTHM / FIRE_FRAMES, true),
         drumDraw = null,
         crowdDraw = null;
@@ -99,7 +100,19 @@
             elapsed = TIMING.updateDelta(now);
         
         if (menu !== null) {
-            menu.update(elapsed);
+            titleScreen.updatePlayback(elapsed, menu);
+            
+            if (keyboardState.wasAsciiPressed("1")) {
+                speedFactor = 2;
+                menu = null;
+            } else if (keyboardState.wasAsciiPressed("2")) {
+                speedFactor = 1;
+                menu = null;
+            }
+            if (menu === null) {
+                resetRhythm();
+                inSync = false;
+            }
         } else {
             if (!inSync) {
                 if (keyboardState.keysDown() > 0) {
@@ -149,7 +162,7 @@
         if (loader.loaded) {
             DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
             if (menu !== null) {
-                menu.draw(context, width, height);
+                titleScreen.draw(context, menu, 0, 0, ALIGN.Center);
             } else {
                 crowd.draw(context, crowdDraw, centerX, centerY + 2, ALIGN.Center, CROWD_WIDTH, CROWD_HEIGHT);
                 fire.draw(context, fireDraw, centerX, centerY - 15, ALIGN.Center, FIRE_WIDTH, FIRE_HEIGHT);
