@@ -11,9 +11,15 @@
             LT : 188,
             GT : 190
         },
-        FIRE_FRAME_TIME = 72.5,
+        BASE_RHYTHM = 572,
+        FIRE_FRAMES = 16,
+        FIRE_FRAME_TIME = 2 * BASE_RHYTHM / FIRE_FRAMES,
+        DRUM_FRAMES = 12,
+        DRUM_FRAME_TIME = BASE_RHYTHM / DRUM_FRAMES,
         FIRE_WIDTH = 106,
         FIRE_HEIGHT = FIRE_WIDTH,
+        DRUM_WIDTH = 160,
+        DRUM_HEIGHT = 40,
         BACKGROUND_PIXEL_WIDTH = 300,
         
         PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F", "C"],
@@ -32,7 +38,8 @@
         TRACKS = 6,
 
         loader = new ImageBatch("images/"),
-        fire = new Flipbook(loader, "fire1/fire_", 16, 2),
+        fire = new Flipbook(loader, "fire1/fire_", FIRE_FRAMES, 2),
+        drum = new Flipbook(loader, "drumbeat_", DRUM_FRAMES, 2),
         background = loader.load("bg.png"),
         letterImages = {},
         keyboardState = new INPUT.KeyboardState(window),
@@ -46,7 +53,8 @@
         twoPlayer = true,
         musicTracks = [],
         music = null,
-        fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true);
+        fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true),
+        drumDraw = drum.setupPlayback(DRUM_FRAME_TIME, true);
     
     (function () {
         for (var letter = "A"; letter <= "Z"; letter = String.fromCharCode(letter.charCodeAt() + 1)) {
@@ -78,6 +86,7 @@
         }
         
         fire.updatePlayback(elapsed, fireDraw);
+        drum.updatePlayback(elapsed, drumDraw);
         
         if (music.isLoaded() && !music.playing) {
             music.play();
@@ -111,6 +120,7 @@
         if (loader.loaded) {
             DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
             fire.draw(context, fireDraw, centerX, centerY - 15, ALIGN.Center, FIRE_WIDTH, FIRE_HEIGHT);
+            drum.draw(context, drumDraw, centerX, centerY + 40, ALIGN.Center, DRUM_WIDTH, DRUM_HEIGHT);
             player1.draw(context, centerX, centerY);
             if (twoPlayer) {
                 player2.draw(context, centerX, centerY);

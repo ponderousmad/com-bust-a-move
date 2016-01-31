@@ -195,6 +195,7 @@ var GAMEPLAY = (function () {
         }
         this.drawSequence(context, centerX, centerY);
         
+        /*
         if (this.onBeat) {
             if (this.pressOnBeat) {
                 context.fillStyle = "green";
@@ -203,9 +204,10 @@ var GAMEPLAY = (function () {
             }
             context.fillRect(centerX + BASE_OFFSET * this.offsetDirection, centerY + PRESSLINE, 100 * this.offsetDirection, 1);
         }
+        */
         context.fillStyle = "white";
         context.font = "20px monospace";
-        DRAW.centeredText(context, this.score.toString(), (BASE_OFFSET + 50) * this.offsetDirection, centerY + PRESSLINE + 10);
+        DRAW.centeredText(context, this.score.toString(), (BASE_OFFSET + 80) * this.offsetDirection, centerY + PRESSLINE + 10);
     };
     
     Player.prototype.activeDancers = function () {
