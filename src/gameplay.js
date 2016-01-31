@@ -27,9 +27,10 @@ var GAMEPLAY = (function () {
         return list[Math.floor(Math.random() * list.length - 0.00001)];
     }
     
-    function Dancer(letters) {
+    function Dancer(letters, tints) {
         this.letter = getRandomElement(letters);
         this.dance = getRandomElement(dances);
+        this.tint = getRandomElement(tints);
         this.status = false;
     }
     
@@ -43,7 +44,7 @@ var GAMEPLAY = (function () {
         if (!flip) {
             context.scale(-1, 1);
         }
-        this.dance.draw(context, 0, y + BASELINE, this.status, jump);
+        this.dance.draw(context, 0, y + BASELINE, this.status, jump, this.tint);
         context.restore();
         
         y += LETTERLINE;
@@ -99,12 +100,12 @@ var GAMEPLAY = (function () {
         return false;
     }
     
-    function createSequence(letters, length) {
+    Player.prototype.createSequence = function (length) {
         var sequence = [];
         for (var c = 0; c < length; ++c) {
             var random = null;
             while (random === null) {
-                random = new Dancer(letters);
+                random = new Dancer(this.letters, this.tints);
                 if (letterInSequence(sequence, random.letter)) {
                     random = null;
                 }
@@ -112,18 +113,19 @@ var GAMEPLAY = (function () {
             sequence.push(random);
         }
         return sequence;
-    }
+    };
     
-    function Player(beatKeys, letters, rhythm, images, offsetDirection) {
+    function Player(beatKeys, letters, tints, rhythm, images, offsetDirection) {
         this.beatKeys = beatKeys;
         this.letters = letters;
         this.rhythm = rhythm;
+        this.tints = tints;
         
         this.images = images;
         this.offsetDirection = offsetDirection;
         
         this.sequenceLength = MIN_SEQUENCE_LENGTH;
-        this.sequence = createSequence(this.letters, this.sequenceLength);
+        this.sequence = this.createSequence(this.sequenceLength);
         this.jump = null;
         this.onBeat = false;
         this.pressOnBeat = false;
@@ -277,7 +279,7 @@ var GAMEPLAY = (function () {
                 if (this.sequenceLength < MAX_SEQUENCE_LENGTH) {
                     this.sequenceLength += 1;
                 }
-                this.sequence = createSequence(this.letters, this.sequenceLength);
+                this.sequence = this.createSequence(this.sequenceLength);
             }
         }
     };

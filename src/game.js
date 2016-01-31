@@ -18,6 +18,17 @@
         
         PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F", "C"],
         PLAYER2_LETTERS = ["O", "I", "U", "Y", "K", "J", "H", "G", "B"],
+        
+        PLAYER1_TINTS = [
+            [1.8, 0, 0],
+            [1.8, 0.9, 0],
+            [1.8, 1.8, 0]
+        ],
+        PLAYER2_TINTS = [
+            [0, 0, 1.8],
+            [0, 0.9, 1.8],
+            [1.8, 0, 1.8]
+        ],
 
         loader = new ImageBatch("images/"),
         fire = new Flipbook(loader, "fire1/fire_", 16, 2),
@@ -29,8 +40,8 @@
         ryhthm = new Rhythm(1144),
         inSync = false,
         
-        player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, ryhthm, letterImages, -1),
-        player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, ryhthm, letterImages, 1),
+        player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, letterImages, -1),
+        player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, PLAYER2_TINTS, ryhthm, letterImages, 1),
         twoPlayer = true,
         music = new AUDIO.Music("audio/mus/musLoop05.ogg"),
         fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true);

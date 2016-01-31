@@ -42,7 +42,7 @@ var Flipbook = (function () {
         }
     };
     
-    Flipbook.prototype.draw = function(context, playback, x, y, alignment, width, height) {
+    Flipbook.prototype.draw = function(context, playback, x, y, alignment, width, height, tint) {
         if (!width) {
             width = this.frames[0].width;
         }
@@ -62,8 +62,14 @@ var Flipbook = (function () {
             x -= width * 0.5;
         }
         
-        var index = Math.min(this.frames.length - 1, Math.floor(playback.elapsed / playback.timePerFrame));
-        context.drawImage(this.frames[index], x, y, width, height);
+        var index = Math.min(this.frames.length - 1, Math.floor(playback.elapsed / playback.timePerFrame)),
+            image = this.frames[index];
+        
+        if (tint) {
+            DRAW.tinted(context, image, x, y, width, height, tint);
+        } else {
+            context.drawImage(image, x, y, width, height);
+        }
     };
     
     return Flipbook;

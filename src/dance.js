@@ -27,13 +27,13 @@ var Dance = (function () {
         return false;
     };
     
-    Dance.prototype.draw = function (context, x, y, dancing, jump) {
+    Dance.prototype.draw = function (context, x, y, dancing, jump, tint) {
         if (jump) {
-            this.jump.draw(context, jump, x, y, ALIGN.Bottom);
+            this.jump.draw(context, jump, x, y, ALIGN.Bottom, null, null, tint);
         } else if (dancing) {
-            this.dance.draw(context, this.dancePlay, x, y, ALIGN.Bottom);
+            this.dance.draw(context, this.dancePlay, x, y, ALIGN.Bottom, null, null, tint);
         } else {
-            this.idle.draw(context, this.idlePlay, x, y, ALIGN.Bottom);
+            this.idle.draw(context, this.idlePlay, x, y, ALIGN.Bottom, null, null, tint);
         }
     };
     

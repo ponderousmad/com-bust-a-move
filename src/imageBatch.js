@@ -81,9 +81,34 @@ var DRAW = (function () {
         context.fillText(text, x, y);
     }
     
+    var tintCanvas = document.createElement('canvas'),
+        tintContext = tintCanvas.getContext('2d');
+    tintCanvas.width = 300;
+    tintCanvas.height = 100;
+    
+    function drawTinted(context, image, x, y, width, height, tint) {
+        tintContext.clearRect(0, 0, image.width, image.height);
+        tintContext.drawImage(image, 0, 0);
+        
+        var buffer = tintContext.getImageData(0, 0, image.width, image.height),
+            data = buffer.data;
+
+        // Adapted from: http://stackoverflow.com/questions/18576702/how-to-tint-an-image-in-html5
+        for (var i = 0; i < data.length; i += 4) {
+            data[i]     = data[i]     * tint[0];  /// add R
+            data[i + 1] = data[i + 1] * tint[1];  /// add G
+            data[i + 2] = data[i + 2] * tint[2];  /// add B
+        }
+
+        tintContext.putImageData(buffer, 0, 0);
+
+        context.drawImage(tintCanvas, 0, 0, image.width, image.height, x, y, width, height);
+    }
+    
     return {
         centered: drawCentered,
         centeredScaled: drawCenteredScaled,
+        tinted: drawTinted,
         centeredText: drawTextCentered
     };
 }());
