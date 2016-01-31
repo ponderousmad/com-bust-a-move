@@ -38,7 +38,7 @@
         keyboardState = new INPUT.KeyboardState(window),
         mouseState = null,
         touchState = null,
-        ryhthm = new Rhythm(1144),
+        ryhthm = new Rhythm(572),
         inSync = false,
         
         player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, letterImages, -1),
@@ -80,7 +80,6 @@
         fire.updatePlayback(elapsed, fireDraw);
         
         if (music.isLoaded() && !music.playing) {
-            music.setVolume(0.25);
             music.play();
             ryhthm.restart();
         }
