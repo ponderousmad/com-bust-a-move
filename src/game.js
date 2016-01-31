@@ -22,7 +22,7 @@
         CROWD_FRAMES = 8,
         CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
         CROWD_HEIGHT = 150,
-        WIN_SCORE = 3,
+        WIN_SCORE = 250,
         
         PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F"],
         PLAYER2_LETTERS = ["O", "I", "U", "Y", "K", "J", "H", "G"],
@@ -178,12 +178,13 @@
             DRAW.centeredScaled(context, background, centerX, centerY, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
             if (menu !== null) {
                 if (winner !== null) {
+                    aspect = 700 / 1600;
+                    winScreen.draw(context, menu, 0, 0, ALIGN.Center, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH * aspect);
                     if (winner == player1) {
                         DRAW.centered(context, win1, 0, 0);
                     } else {
                         DRAW.centered(context, win2, 0, 0);
                     }
-                    winScreen.draw(context, menu, 0, 0, ALIGN.Center);
                 } else {
                     titleScreen.draw(context, menu, 0, 0, ALIGN.Center);
                 }
