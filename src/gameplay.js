@@ -2,7 +2,7 @@ var GAMEPLAY = (function () {
     "use strict";
     
     var loader = new ImageBatch("images/"),
-        flareSound = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.ogg"),
+        flareSounds = [],
         wrongSound = new AUDIO.SoundEffect("audio/sfx/sfxDingWrong.ogg"),
         stunSound = new AUDIO.SoundEffect("audio/sfx/sfxStun01.ogg"),
         cashinSound = new AUDIO.SoundEffect("audio/sfx/sfxCashin01.ogg"),
@@ -25,10 +25,16 @@ var GAMEPLAY = (function () {
         MIN_SEQUENCE_LENGTH = 6,
         MAX_SEQUENCE_LENGTH = 6;
     
-    for (var d = 1; d <= MAX_SEQUENCE_LENGTH; ++d) {
-        dings.push(new AUDIO.SoundEffect("audio/sfx/sfxDing0" + d + ".ogg"))
-    }
-    loader.commit();
+    (function() {
+        for (var d = 1; d <= MAX_SEQUENCE_LENGTH; ++d) {
+            dings.push(new AUDIO.SoundEffect("audio/sfx/sfxDing0" + d + ".ogg"))
+        }
+        for (var f = 1; f <= MAX_SEQUENCE_LENGTH; ++f) {
+            flareSounds.push(new AUDIO.SoundEffect("audio/sfx/sfxFlare0" + f + ".ogg"))
+        }
+
+        loader.commit();
+    }());
     
     function getRandomElement(list) {
         return list[Math.floor(Math.random() * list.length - 0.00001)];
@@ -332,7 +338,7 @@ var GAMEPLAY = (function () {
             }
         }
         if (jumped > 0) {
-            flareSound.play();
+            getRandomElement(flareSounds).play();
             cashinSound.play();
             this.score += jumped > 1 ? Math.pow(2, jumped) : jumped;
         }
