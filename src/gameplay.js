@@ -237,7 +237,7 @@ var GAMEPLAY = (function () {
         */
         context.fillStyle = "white";
         context.font = "20px monospace";
-        DRAW.centeredText(context, this.score.toString(), BASE_OFFSET * this.offsetDirection, centerY + 70);
+        DRAW.centeredText(context, this.score.toString(), BASE_OFFSET * this.offsetDirection * 0.5, centerY + 70);
     };
     
     Player.prototype.activeDancers = function () {
