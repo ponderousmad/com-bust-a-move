@@ -77,10 +77,26 @@ var GAMEPLAY = (function () {
         return this.remaining <= 0;
     };
     
+    function letterInSequence(sequence, letter) {
+        for (var i = 0; i < sequence.length; ++i) {
+            if (sequence[i].letter === letter) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     function createSequence(letters, length) {
         var sequence = [];
         for (var c = 0; c < length; ++c) {
-            sequence.push(new Dancer(letters));
+            var random = null;
+            while (random === null) {
+                random = new Dancer(letters);
+                if (letterInSequence(sequence, random.letter)) {
+                    random = null;
+                }
+            }
+            sequence.push(random);
         }
         return sequence;
     }
