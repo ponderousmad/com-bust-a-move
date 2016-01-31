@@ -4,12 +4,14 @@ var GAMEPLAY = (function () {
     var loader = new ImageBatch("images/"),
         flareSound = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.ogg"),
         wrongSound = new AUDIO.SoundEffect("audio/sfx/sfxDingWrong.ogg"),
+        stunSound = new AUDIO.SoundEffect("audio/sfx/sfxStun01.ogg"),
+        cashinSound = new AUDIO.SoundEffect("audio/sfx/sfxCashin01.ogg"),
         dings = [],
         dances = [
-            new Dance(loader, "dancers/amy_idle_", "dancers/amy_dance_", "dancers/amy_jump_"),
-            new Dance(loader, "dancers/amy_idle_", "dancers/betty_dance_", "dancers/amy_jump_"),
-            new Dance(loader, "dancers/amy_idle_", "dancers/charlie_dance_", "dancers/amy_jump_"),
-            new Dance(loader, "dancers/amy_idle_", "dancers/dave_dance_", "dancers/amy_jump_")
+            new Dance(loader, "dancers/amy_idle_", "dancers/amy_dance_", "dancers/amy_jump_", "dancers/amy_stun_"),
+            new Dance(loader, "dancers/amy_idle_", "dancers/betty_dance_", "dancers/amy_jump_", "dancers/amy_stun_"),
+            new Dance(loader, "dancers/amy_idle_", "dancers/charlie_dance_", "dancers/amy_jump_", "dancers/amy_stun_"),
+            new Dance(loader, "dancers/amy_idle_", "dancers/dave_dance_", "dancers/amy_jump_", "dancers/amy_stun_")
         ],
         DANCER_SPACING = 20,
         KEY_DRAW_FOR = 250,
@@ -19,6 +21,7 @@ var GAMEPLAY = (function () {
         PRESSLINE = 30,
         FIRE_JUMP_TIME = 1000,
         BEAT_TOLERANCE = 0.4,
+        STUN_DURATION = 1200,
         MIN_SEQUENCE_LENGTH = 3,
         MAX_SEQUENCE_LENGTH = 6;
     
@@ -35,6 +38,7 @@ var GAMEPLAY = (function () {
         this.letter = getRandomElement(letters);
         this.dance = getRandomElement(dances);
         this.tint = getRandomElement(tints);
+        this.stunned = 0;
         this.status = false;
         this.jump = null;
     }
@@ -49,7 +53,15 @@ var GAMEPLAY = (function () {
         if (!flip) {
             context.scale(-1, 1);
         }
-        this.dance.draw(context, 0, y + BASELINE, this.status, this.jump, this.tint);
+        var tint = this.tint;
+        if (this.stunned > 0) {
+            tint = [
+                this.tint[2],
+                this.tint[1],
+                this.tint[0]
+            ];
+        }
+        this.dance.draw(context, 0, y + BASELINE, this.stunned > 0, this.status, this.jump, tint);
         context.restore();
         
         y += LETTERLINE;
@@ -58,8 +70,9 @@ var GAMEPLAY = (function () {
             context.fillStyle = "rgba(0,255,0,0.25)";
             context.fillRect(x - width * 0.5, y - height * 0.5, width, height);
         }
-        
-        DRAW.centered(context, image, x, y);
+        if (this.stunned <= 0) {
+            DRAW.centered(context, image, x, y);
+        }
     };
     
     Dancer.prototype.isLetter = function (letter) {
@@ -96,7 +109,20 @@ var GAMEPLAY = (function () {
         this.jump = this.dance.startJump();
     };
     
-    Dancer.prototype.updateJump = function (elapsed) {
+    Dancer.prototype.stun = function () {
+        if (this.isActive() && !this.isJumping()) {
+            this.stunned = STUN_DURATION;
+            this.status = false;
+            console.log("Stunned");
+            return true;
+        }
+        return false;
+    };
+    
+    Dancer.prototype.update = function (elapsed) {
+        if (this.stunned > 0) {
+            this.stunned -= elapsed;
+        }
         return this.dance.updateJump(elapsed, this.jump);
     };
     
@@ -164,6 +190,9 @@ var GAMEPLAY = (function () {
     };
     
     Player.prototype.draw = function (context, centerX, centerY) {
+        if (!loader.loaded) {
+            return;
+        }
         this.drawSequence(context, centerX, centerY);
         
         if (this.onBeat) {
@@ -268,6 +297,7 @@ var GAMEPLAY = (function () {
         }
         if (jumped > 0) {
             flareSound.play();
+            cashinSound.play();
             this.score += jumped > 1 ? Math.pow(2, jumped) : jumped;
         }
     };
@@ -317,18 +347,28 @@ var GAMEPLAY = (function () {
             this.lostBeat();
         }
     
-        if (this.jumping() > 0) {
-            var addDancer = false;
-            for (var i = 0; i < this.sequence.length; ++i) {
-                var dancer = this.sequence[i];
-                if (dancer.updateJump(elapsed)) {
-                    addDancer = true;
-                    this.sequence[i] = this.createDancer(this.sequence);
+        var addDancer = false,
+            stunned = false;
+        for (var i = 0; i < this.sequence.length; ++i) {
+            var dancer = this.sequence[i];
+            if (dancer.update(elapsed)) {
+                addDancer = true;
+                this.sequence[i] = this.createDancer(this.sequence);
+                if (otherPlayer.sequence.length > i) {
+                    var otherDancer = otherPlayer.sequence[i];
+                    if (otherDancer) {
+                        if (otherDancer.stun()) {
+                            stunned = true;
+                        }
+                    }
                 }
             }
-            if (addDancer && this.sequence.length < MAX_SEQUENCE_LENGTH) {
-                this.sequence.push(this.createDancer(this.sequence));
-            }
+        }
+        if (stunned) {
+            stunSound.play();
+        }
+        if (addDancer && this.sequence.length < MAX_SEQUENCE_LENGTH) {
+            this.sequence.push(this.createDancer(this.sequence));
         }
     };
 
