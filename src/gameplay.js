@@ -135,6 +135,8 @@ var GAMEPLAY = (function () {
         this.onBeat = false;
         this.pressOnBeat = false;
         this.beatTolerance = BEAT_TOLERANCE;
+        this.score = 0;
+        this.activeBeats = [];
         this.sync();
     }
     
@@ -164,28 +166,30 @@ var GAMEPLAY = (function () {
             }
             context.fillRect(centerX + BASE_OFFSET * this.offsetDirection, centerY + PRESSLINE, 100 * this.offsetDirection, 1);
         }
+        context.fillStyle = "white";
         context.font = "5px serif";
-        DRAW.centeredText(context, this.lastBeat.toString(), (BASE_OFFSET + 50) * this.offsetDirection, centerY + PRESSLINE + 10);
+        DRAW.centeredText(context, this.score.toString(), (BASE_OFFSET + 50) * this.offsetDirection, centerY + PRESSLINE + 10);
+    };
+    
+    Player.prototype.activeDancers = function() {
+        var count = 0;
+        for (var i = 0; i < this.sequence.length; ++i) {
+            if (this.sequence[i].isActive()) {
+                ++count;
+            }
+        }
+        return count;
     };
     
     Player.prototype.sequencePressed = function(letter) {        
-        var success = false,
-            count = 0;
         for (var i = 0; i < this.sequence.length; ++i) {
             var dancer = this.sequence[i];
             if (dancer.isLetter(letter)) {
                 if(dancer.check(letter)) {
-                    success = true;
-                } else {
-                    return null;
+                    return this.activeDancers();
                 }
+                return null;
             }
-            if (dancer.isActive()) {
-                count += 1;
-            }
-        }
-        if (success) {
-            return count;
         }
         return null;
     };
@@ -236,15 +240,18 @@ var GAMEPLAY = (function () {
     
     Player.prototype.sacrifice = function() {
         console.log("attempt sacrifice");
+        this.activeBeats = [];
         for (var i = 0; i < this.sequence.length; ++i) {
             if (this.sequence[i].isActive()) {
                 this.jump = this.sequence[i].jump();
+                var active = this.activeDancers();
+                this.score += active > 1 ? Math.pow(2, active) : active;
                 break;
             }
         }
     };
     
-    Player.prototype.update = function (now, elapsed, keyboard) {
+    Player.prototype.update = function (now, elapsed, keyboard, otherPlayer) {
         var pressed = [];
         for (var l = 0; l < this.letters.length; ++l) {
             var letter = this.letters[l];
@@ -252,18 +259,17 @@ var GAMEPLAY = (function () {
                 pressed.push(letter);
             }
         }
-        var beats = 0;
         for (var b = 0; b < this.beatKeys.length; ++b) {
             if (this.updateLetter(this.beatKeys[b], keyboard, false)) {
-                beats += 1;
+                this.activeBeats.push(b);
             }
         }
         
         var beat = this.rhythm.beatNumber(now, this.beatTolerance);
         
-        if (beats > 0 && pressed.length > 0) {
+        if (this.activeBeats.length > 0 && pressed.length > 0) {
             this.lostBeat("Too many letters");
-        } else if(beats > 1) {
+        } else if(this.activeBeats.length > 1) {
             this.sacrifice();
         } else if(pressed.length === 1) {
             var activated = this.sequencePressed(pressed[0]);
@@ -273,7 +279,7 @@ var GAMEPLAY = (function () {
                 this.sequenceBeat = beat;
                 dings[activated-1].play();
             }
-        } else if(beats > 0) {
+        } else if(this.activeBeats.length > 0) {
             this.sequenceBeat = beat;
         }
         
@@ -283,6 +289,7 @@ var GAMEPLAY = (function () {
         if (!this.onBeat && beat > this.lastBeat) {
             this.lastBeat = beat;
             this.pressOnBeat = false;
+            this.activeBeats = [];
         }
         
         if (this.onBeat && this.lastBeat > this.sequenceBeat) {
