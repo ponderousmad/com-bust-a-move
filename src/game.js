@@ -11,7 +11,7 @@
             LT : 188,
             GT : 190
         },
-        FIRE_FRAME_TIME = 80,
+        FIRE_FRAME_TIME = 72.5,
         FIRE_WIDTH = 106,
         FIRE_HEIGHT = FIRE_WIDTH,
         BACKGROUND_PIXEL_WIDTH = 300,
@@ -29,6 +29,7 @@
             [0, 0.9, 1.8],
             [1.8, 0, 1.8]
         ],
+        TRACKS = 6,
 
         loader = new ImageBatch("images/"),
         fire = new Flipbook(loader, "fire1/fire_", 16, 2),
@@ -43,13 +44,18 @@
         player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, PLAYER1_TINTS, ryhthm, letterImages, -1),
         player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, PLAYER2_TINTS, ryhthm, letterImages, 1),
         twoPlayer = true,
-        music = new AUDIO.Music("audio/mus/musLoop05.ogg"),
+        musicTracks = [],
+        music = null,
         fireDraw = fire.setupPlayback(FIRE_FRAME_TIME, true);
     
     (function () {
         for (var letter = "A"; letter <= "Z"; letter = String.fromCharCode(letter.charCodeAt() + 1)) {
              letterImages[letter] = loader.load("font/" + letter.toLowerCase() + ".png");
         }
+        for (var track = 0; track < TRACKS; ++track) {
+            musicTracks.push(new AUDIO.Music("audio/mus/musLoop0" + track + ".ogg"));
+        }
+        music = GAMEPLAY.randomElement(musicTracks);
         loader.commit();
     }());
     
