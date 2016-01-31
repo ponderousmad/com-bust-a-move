@@ -29,17 +29,22 @@ var GAMEPLAY = (function () {
     
     function Dancer(letters) {
         this.letter = getRandomElement(letters);
-        this.dancer = getRandomElement(dances);
+        this.dance = getRandomElement(dances);
         this.status = false;
-        this.jump = null;
     }
     
-    Dancer.prototype.draw = function (context, images, x, y) {
+    Dancer.prototype.draw = function (context, images, x, y, flip, jump) {
         var image = images[this.letter],
             width = image.width,
             height = image.height;
         
-        this.dancer.draw(context, x, y + BASELINE, this.status, this.jump);
+        context.save();
+        context.translate(x, 0);
+        if (!flip) {
+            context.scale(-1, 1);
+        }
+        this.dance.draw(context, 0, y + BASELINE, this.status, jump);
+        context.restore();
         
         y += LETTERLINE;
         
@@ -77,13 +82,12 @@ var GAMEPLAY = (function () {
         return false;
     };
     
-    function FireJump() {
-        this.remaining = FIRE_JUMP_TIME;
-    }
+    Dancer.prototype.jump = function () {
+        return this.dance.startJump();
+    };
     
-    FireJump.prototype.update = function (elapsed) {
-        this.remaining -= elapsed;
-        return this.remaining <= 0;
+    Dancer.prototype.updateJump = function (elapsed, jump) {
+        return this.dance.updateJump(elapsed, jump);
     };
     
     function letterInSequence(sequence, letter) {
@@ -121,17 +125,22 @@ var GAMEPLAY = (function () {
         this.sequenceLength = MIN_SEQUENCE_LENGTH;
         this.sequence = createSequence(this.letters, this.sequenceLength);
         this.jump = null;
-        this.lastBeat = rhythm.beatNumber(TIMING.now(), BEAT_TOLERANCE);
         this.onBeat = false;
         this.pressOnBeat = false;
-        this.firstPress = true;
+        this.beatTolerance = BEAT_TOLERANCE;
+        this.sync();
     }
+    
+    Player.prototype.sync = function() {
+        this.lastBeat = this.rhythm.beatNumber(TIMING.now(), this.beatTolerance);  
+    };
     
     Player.prototype.drawSequence = function (context, centerX, centerY) {
         var offset = BASE_OFFSET;
         for (var i = 0; i < this.sequence.length; ++i) {
-            var dancer = this.sequence[i];
-            dancer.draw(context, this.images, centerX + offset * this.offsetDirection, centerY);
+            var dancer = this.sequence[i],
+                xOffset = centerX + offset * this.offsetDirection;
+            dancer.draw(context, this.images, xOffset, centerY, this.offsetDirection < 0, i == 0 ? this.jump : null);
             offset += DANCER_SPACING;
         }
     };
@@ -166,15 +175,10 @@ var GAMEPLAY = (function () {
     
     Player.prototype.updateLetter = function (letter, keyboard) {
         if (keyboard.wasAsciiPressed(letter)) {
-            if (this.firstPress) {
-                this.rhythm.restart();
-                this.firstPress = false;
-                this.lastBeat = 0;
-            }
             var time = keyboard.keyTime(letter.charCodeAt());
-            if (this.rhythm.onBeat(time, BEAT_TOLERANCE)) {
+            if (this.rhythm.onBeat(time, this.beatTolerance)) {
                 this.pressOnBeat = true;
-                if (this.rhythm.beatNumber(time, BEAT_TOLERANCE) >= this.lastBeat) {
+                if (this.rhythm.beatNumber(time, this.beatTolerance) >= this.lastBeat) {
                     return true;
                 } else {
                     this.lostBeat("Beat repeat");
@@ -188,7 +192,9 @@ var GAMEPLAY = (function () {
     };
     
     Player.prototype.lostBeat = function(context) {
-        console.log("Lost beat: " + context);
+        if (context) {
+            console.log("Lost beat: " + context);
+        }
         if (this.jump !== null) {
             return;
         }
@@ -201,21 +207,20 @@ var GAMEPLAY = (function () {
         }
         if (resetCount > 0) {
             wrongSound.play();
+            if (!context) {
+            console.log("Lost beat: Dropped a beat");
+            }
             console.log("Reset letters");
         }
     };
     
     Player.prototype.sacrifice = function() {
         console.log("attempt sacrifice");
-        var isDancer = false;
         for (var i = 0; i < this.sequence.length; ++i) {
             if (this.sequence[i].isActive()) {
-                isDancer = true;
+                this.jump = this.sequence[i].jump();
                 break;
             }
-        }
-        if (isDancer) {
-            this.jump = new FireJump();
         }
     };
     
@@ -245,17 +250,17 @@ var GAMEPLAY = (function () {
             }
         }
         
-        var beat = this.rhythm.beatNumber(now, BEAT_TOLERANCE);
+        var beat = this.rhythm.beatNumber(now, this.beatTolerance);
         if (beat > this.lastBeat) {
-            this.lostBeat("Dropped a beat");
+            this.lostBeat();
             this.lastBeat = beat;
             this.pressOnBeat = false;
         }
         
-        this.onBeat = this.rhythm.onBeat(now, BEAT_TOLERANCE);
+        this.onBeat = this.rhythm.onBeat(now, this.beatTolerance);
     
         if (this.jump !== null) {
-            if (this.jump.update(elapsed)) {
+            if (this.sequence[0].updateJump(elapsed, this.jump)) {
                 this.jump = null;
                 if (this.sequenceLength < MAX_SEQUENCE_LENGTH) {
                     this.sequenceLength += 1;

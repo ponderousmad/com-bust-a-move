@@ -27,6 +27,7 @@
         mouseState = null,
         touchState = null,
         ryhthm = new Rhythm(572),
+        inSync = false,
         
         player1 = new GAMEPLAY.Player(["Z", "X"], PLAYER1_LETTERS, ryhthm, letterImages, -1),
         player2 = new GAMEPLAY.Player(["N", "M"], PLAYER2_LETTERS, ryhthm, letterImages, 1),
@@ -44,6 +45,15 @@
     function update() {
         var now = TIMING.now(),
             elapsed = TIMING.updateDelta(now);
+        
+        if (!inSync) {
+            if (keyboardState.keysDown() > 0) {
+                ryhthm.restart();
+                player1.sync();
+                player2.sync();
+                inSync = true;
+            }
+        }
         
         player1.update(now, elapsed, keyboardState);
         if (twoPlayer) {
