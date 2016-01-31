@@ -5,10 +5,10 @@ var GAMEPLAY = (function () {
         flareSound = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.ogg"),
         wrongSound = new AUDIO.SoundEffect("audio/sfx/sfxDingWrong.ogg"),
         dances = [
-            new Dance(loader, "dancers/amy_dance_"),
-            new Dance(loader, "dancers/betty_dance_"),
-            new Dance(loader, "dancers/charlie_dance_"),
-            new Dance(loader, "dancers/dave_dance_")
+            new Dance(loader, "dancers/amy_idle_", "dancers/amy_dance_", "dancers/amy_jump_"),
+            new Dance(loader, "dancers/amy_idle_", "dancers/betty_dance_", "dancers/amy_jump_"),
+            new Dance(loader, "dancers/amy_idle_", "dancers/charlie_dance_", "dancers/amy_jump_"),
+            new Dance(loader, "dancers/amy_idle_", "dancers/dave_dance_", "dancers/amy_jump_")
         ],
         DANCER_SPACING = 20,
         KEY_DRAW_FOR = 250,
@@ -31,6 +31,7 @@ var GAMEPLAY = (function () {
         this.letter = getRandomElement(letters);
         this.dancer = getRandomElement(dances);
         this.status = false;
+        this.jump = null;
     }
     
     Dancer.prototype.draw = function (context, images, x, y) {
@@ -38,7 +39,7 @@ var GAMEPLAY = (function () {
             width = image.width,
             height = image.height;
         
-        this.dancer.draw(context, x, y + BASELINE);
+        this.dancer.draw(context, x, y + BASELINE, this.status, this.jump);
         
         y += LETTERLINE;
         
@@ -50,6 +51,10 @@ var GAMEPLAY = (function () {
         DRAW.centered(context, image, x, y);
     };
     
+    Dancer.prototype.isLetter = function (letter) {
+        return letter === this.letter;
+    };
+    
     Dancer.prototype.check = function (letter) {
         if (this.letter === letter) {
             if (!this.status) {
@@ -58,6 +63,10 @@ var GAMEPLAY = (function () {
             }
         }
         return false;
+    };
+    
+    Dancer.prototype.isActive = function () {
+        return this.status;
     };
     
     Dancer.prototype.reset = function () {
@@ -79,7 +88,7 @@ var GAMEPLAY = (function () {
     
     function letterInSequence(sequence, letter) {
         for (var i = 0; i < sequence.length; ++i) {
-            if (sequence[i].letter === letter) {
+            if (sequence[i].isLetter(letter)) {
                 return true;
             }
         }
@@ -145,7 +154,7 @@ var GAMEPLAY = (function () {
     Player.prototype.sequencePressed = function(letter) {
         for (var i = 0; i < this.sequence.length; ++i) {
             var dancer = this.sequence[i];
-            if (dancer.letter === letter) {
+            if (dancer.isLetter(letter)) {
                 if(dancer.check(letter)) {
                     return true;
                 }
@@ -159,7 +168,7 @@ var GAMEPLAY = (function () {
         if (keyboard.wasAsciiPressed(letter)) {
             if (this.firstPress) {
                 this.rhythm.restart();
-                this.firstPress = true;
+                this.firstPress = false;
                 this.lastBeat = 0;
             }
             var time = keyboard.keyTime(letter.charCodeAt());
@@ -168,17 +177,21 @@ var GAMEPLAY = (function () {
                 if (this.rhythm.beatNumber(time, BEAT_TOLERANCE) >= this.lastBeat) {
                     return true;
                 } else {
-                    this.lostBeat();
+                    this.lostBeat("Beat repeat");
                 }
             } else {
-                this.lostBeat();
+                this.lostBeat("Off beat");
                 return false;
             }
         }
         return false;
     };
     
-    Player.prototype.lostBeat = function() {
+    Player.prototype.lostBeat = function(context) {
+        console.log("Lost beat: " + context);
+        if (this.jump !== null) {
+            return;
+        }
         var resetCount = 0;
         for (var i = 0; i < this.sequence.length; ++i) {
             var dancer = this.sequence[i];
@@ -188,11 +201,22 @@ var GAMEPLAY = (function () {
         }
         if (resetCount > 0) {
             wrongSound.play();
+            console.log("Reset letters");
         }
     };
     
     Player.prototype.sacrifice = function() {
-        this.jump = new FireJump();
+        console.log("attempt sacrifice");
+        var isDancer = false;
+        for (var i = 0; i < this.sequence.length; ++i) {
+            if (this.sequence[i].isActive()) {
+                isDancer = true;
+                break;
+            }
+        }
+        if (isDancer) {
+            this.jump = new FireJump();
+        }
     };
     
     Player.prototype.update = function (now, elapsed, keyboard) {
@@ -210,20 +234,20 @@ var GAMEPLAY = (function () {
             }
         }
         if (beats > 0 && pressed.length > 0) {
-            this.lostBeat();
-        } else if(beats > 2) {
+            this.lostBeat("Too many letters");
+        } else if(beats > 1) {
             this.sacrifice();
         } else if(pressed.length === 1) {
             if(this.sequencePressed(pressed[0])) {
                 this.lastBeat += 1;
             } else {
-                this.lostBeat();
+                this.lostBeat("letter repeat");
             }
         }
         
         var beat = this.rhythm.beatNumber(now, BEAT_TOLERANCE);
         if (beat > this.lastBeat) {
-            this.lostBeat();
+            this.lostBeat("Dropped a beat");
             this.lastBeat = beat;
             this.pressOnBeat = false;
         }
