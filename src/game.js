@@ -46,7 +46,13 @@
             leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
             rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),
             idle: new Flipbook(loader, "avatar_idle_", 4, 2),
-            bongo: loader.load("bongo/bongo.png")
+            bongo: loader.load("bongo/bongo.png"),
+            bongoLetters: {
+                Z: loader.load("bongo/bongo_z.png"),
+                X: loader.load("bongo/bongo_x.png"),
+                M: loader.load("bongo/bongo_n.png"),
+                N: loader.load("bongo/bongo_m.png")
+            }
         },
         background = loader.load("bg.png"),
         letterImages = {},

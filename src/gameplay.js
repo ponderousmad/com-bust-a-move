@@ -219,6 +219,11 @@ var GAMEPLAY = (function () {
         }
         context.restore();
         
+        for (var b = 0; b < this.beatKeys.length; ++b) {
+            var beatImage = this.avatar.bongoLetters[this.beatKeys[b]];
+            DRAW.centered(context, beatImage, avatarCenter, avatarBase);
+        }
+        
         /*
         if (this.onBeat) {
             if (this.pressOnBeat) {
