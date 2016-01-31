@@ -47,6 +47,7 @@
         winScreen = new Flipbook(loader, "win_image_", 6, 2),
         win1 = loader.load("win_p1.png"),
         win2 = loader.load("win_p2.png"),
+        winSound = new AUDIO.SoundEffect("audio/mus/musGameEnd.ogg"),
         avatar = {
             leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
             rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),
@@ -114,6 +115,10 @@
             menuDelay -= elapsed;
             if (menuDelay < 0) {
                 menu = null;
+                if (winner !== null) {
+                    music = GAMEPLAY.randomElement(musicTracks);
+                    inSync = false;
+                }
                 winner = null;
                 player1.reset();
                 player2.reset();
@@ -139,13 +144,16 @@
             if (winner !== null) {
                 menu = winScreen.setupPlayback(80, true);
                 menuDelay = 5000;
+                music.stop();
+                music = null;
+                winSound.play();
             }
 
             fire.updatePlayback(elapsed, fireDraw);
             drum.updatePlayback(elapsed, drumDraw);
             crowd.updatePlayback(elapsed, crowdDraw);
 
-            if (music.isLoaded() && !music.playing) {
+            if (music !== null && music.isLoaded() && !music.playing) {
                 music.play();
                 ryhthm.restart();
             }

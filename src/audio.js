@@ -113,6 +113,14 @@ var AUDIO = (function (baseURL) {
         }
     }
     
+    Music.prototype.stop = function () {
+        if (this.source) {
+            this.source.stop();
+            this.source.disconnect(gAudioContext.destination);
+        }
+        this.playing = false;
+    }
+    
     return {
         SoundEffect: SoundEffect,
         Music: Music,
