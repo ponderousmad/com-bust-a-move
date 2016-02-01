@@ -1,4 +1,4 @@
-# com-bust-a-move
+# COMBUST-A-MOVE
 Global Game Jam 2016 entry
 
 Dancing. Fire. Music. What's not to like.
