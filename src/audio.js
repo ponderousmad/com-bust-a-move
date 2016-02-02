@@ -116,7 +116,10 @@ var AUDIO = (function (baseURL) {
     Music.prototype.stop = function () {
         if (this.source) {
             this.source.stop();
-            this.source.disconnect(gAudioContext.destination);
+            this.gain.disconnect(gAudioContext.destination);
+            this.source.disconnect(this.gain);
+            this.gain = null;
+            this.source = null;
         }
         this.playing = false;
     }
