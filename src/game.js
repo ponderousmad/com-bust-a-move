@@ -22,8 +22,8 @@
         CROWD_FRAMES = 8,
         CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
         CROWD_HEIGHT = 150,
-        INSTRUCTION_TIME = 9000,
-        INSTRUCTION_PAUSE_TIME = 3000,
+        INSTRUCTION_TIME = 10000,
+        INSTRUCTION_PAUSE_TIME = 2500,
         INSTRUCTION_FADE = 1000,
         WIN_SCORE = 250,
         
@@ -231,7 +231,7 @@
                     } else if (instructionDelay < INSTRUCTION_FADE) {
                         context.globalAlpha = instructionDelay / INSTRUCTION_FADE;
                     }
-                    DRAW.centered(context, instruction, 0, 20);
+                    DRAW.centered(context, instruction, 0, 0);
                 }
             }
         }
