@@ -18,11 +18,12 @@ var Flipbook = (function () {
         }
     }
     
-    Flipbook.prototype.setupPlayback = function(frameTime, loop) {
+    Flipbook.prototype.setupPlayback = function(frameTime, loop, offset) {
+        var time = offset ? offset : 0;
         return {
-            elapsed: 0,
+            elapsed: time,
             timePerFrame: frameTime,
-            fractionComplete: 0,
+            fractionComplete: time / (frameTime * this.frames.length),
             loop: loop === true
         };
     };

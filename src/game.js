@@ -22,8 +22,8 @@
         CROWD_FRAMES = 8,
         CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
         CROWD_HEIGHT = 150,
-        INSTRUCTION_TIME = 8000,
-        INSTRUCTION_PAUSE_TIME = 2000,
+        INSTRUCTION_TIME = 9000,
+        INSTRUCTION_PAUSE_TIME = 3000,
         INSTRUCTION_FADE = 1000,
         WIN_SCORE = 250,
         
@@ -65,6 +65,7 @@
         },
         background = loader.load("bg.png"),
         instruction = loader.load("instruction.png"),
+        credits = loader.load("credits.png"),
         letterImages = {},
         keyboardState = new INPUT.KeyboardState(window),
         mouseState = null,
@@ -111,13 +112,15 @@
         var now = TIMING.now(),
             elapsed = TIMING.updateDelta(now);
         
+        if (menuDelay > - INSTRUCTION_FADE) {
+            menuDelay -= elapsed;
+        }
         if (menu !== null) {
             if (winner !== null) {
                 winScreen.updatePlayback(elapsed, menu);
             } else {
                 titleScreen.updatePlayback(elapsed, menu);
             }
-            menuDelay -= elapsed;
             if (menuDelay < 0) {
                 menu = null;
                 if (winner !== null) {
@@ -201,6 +204,7 @@
                     }
                 } else {
                     titleScreen.draw(context, menu, 0, 0, ALIGN.Center);
+                    DRAW.centeredScaled(context, credits, 0, 0, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH);
                 }
             } else {
                 crowd.draw(context, crowdDraw, centerX, centerY + 2, ALIGN.Center, CROWD_WIDTH, CROWD_HEIGHT);
@@ -210,6 +214,15 @@
                 if (twoPlayer) {
                     player2.draw(context, centerX, centerY);
                 }
+                
+                if (menuDelay + INSTRUCTION_FADE > 0 && winner === null) {
+                    var fraction = menuDelay / INSTRUCTION_FADE;
+                    fraction = fraction * fraction;
+                    context.globalAlpha = 1 - fraction;
+                    var titleOffset = -40 * fraction;
+                    titleScreen.draw(context, titleScreen.setupPlayback(80, true, menuDelay + INSTRUCTION_FADE), 0, titleOffset, ALIGN.Center);
+                    DRAW.centeredScaled(context, credits, 0, 0, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH);
+                }
             
                 if (0 < instructionDelay && instructionDelay < (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME)) {
                     var delay = instructionDelay
@@ -218,7 +231,7 @@
                     } else if (instructionDelay < INSTRUCTION_FADE) {
                         context.globalAlpha = instructionDelay / INSTRUCTION_FADE;
                     }
-                    DRAW.centered(context, instruction, 0, 25);
+                    DRAW.centered(context, instruction, 0, 20);
                 }
             }
         }
