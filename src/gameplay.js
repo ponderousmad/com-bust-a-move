@@ -179,7 +179,7 @@ var GAMEPLAY = (function () {
     Player.prototype.reset = function() {
         this.sequence = this.createSequence(MIN_SEQUENCE_LENGTH);
         this.score = 0;
-        this.activeBeats = 0;
+        this.activeBeats = [];
         this.sync();
     };
     
