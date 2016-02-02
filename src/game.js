@@ -22,6 +22,9 @@
         CROWD_FRAMES = 8,
         CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
         CROWD_HEIGHT = 150,
+        INSTRUCTION_TIME = 8000,
+        INSTRUCTION_PAUSE_TIME = 2000,
+        INSTRUCTION_FADE = 1000,
         WIN_SCORE = 250,
         
         PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F"],
@@ -61,6 +64,7 @@
             }
         },
         background = loader.load("bg.png"),
+        instruction = loader.load("instruction.png"),
         letterImages = {},
         keyboardState = new INPUT.KeyboardState(window),
         mouseState = null,
@@ -75,7 +79,8 @@
         musicTracks = [],
         music = null,
         menu = titleScreen.setupPlayback(80, true),
-        menuDelay = 5000,
+        menuDelay = 4000,
+        instructionDelay = INSTRUCTION_TIME,
         winner = null,
         fireDraw = fire.setupPlayback(2 * BASE_RHYTHM / FIRE_FRAMES, true),
         drumDraw = null,
@@ -124,6 +129,7 @@
                 player2.reset();
             }
         } else {
+            instructionDelay -= elapsed;
             if (!inSync) {
                 if (keyboardState.keysDown() > 0) {
                     resetRhythm();
@@ -203,6 +209,16 @@
                 player1.draw(context, centerX, centerY);
                 if (twoPlayer) {
                     player2.draw(context, centerX, centerY);
+                }
+            
+                if (0 < instructionDelay && instructionDelay < (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME)) {
+                    var delay = instructionDelay
+                    if (-instructionDelay + (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME) < INSTRUCTION_FADE) {
+                        context.globalAlpha = (-instructionDelay + (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME)) / INSTRUCTION_FADE;
+                    } else if (instructionDelay < INSTRUCTION_FADE) {
+                        context.globalAlpha = instructionDelay / INSTRUCTION_FADE;
+                    }
+                    DRAW.centered(context, instruction, 0, 25);
                 }
             }
         }
