@@ -126,20 +126,13 @@
                 menu = null;
                 if (winner !== null) {
                     music = GAMEPLAY.randomElement(musicTracks);
-                    fireSound.stop();
                     inSync = false;
                 }
                 winner = null;
                 player1.reset();
                 player2.reset();
-            }
-            
-            if (fireSound.isLoaded()) {
-                if (winner === null ) {
-                    if(!fireSound.playing) {
-                        fireSound.play();
-                    }
-                }
+            } else if (fireSound.isLoaded() && !fireSound.playing) {
+                fireSound.play();
             }
         } else {
             instructionDelay -= elapsed;
