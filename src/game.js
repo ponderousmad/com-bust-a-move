@@ -51,6 +51,7 @@
         win1 = loader.load("win_p1.png"),
         win2 = loader.load("win_p2.png"),
         winSound = new AUDIO.SoundEffect("audio/mus/musGameEnd.ogg"),
+        fireSound = new AUDIO.Music("audio/sfx/sfxFireOnly_Ambience01.ogg"),
         avatar = {
             leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
             rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),
@@ -125,11 +126,20 @@
                 menu = null;
                 if (winner !== null) {
                     music = GAMEPLAY.randomElement(musicTracks);
+                    fireSound.stop();
                     inSync = false;
                 }
                 winner = null;
                 player1.reset();
                 player2.reset();
+            }
+            
+            if (fireSound.isLoaded()) {
+                if (winner === null ) {
+                    if(!fireSound.playing) {
+                        fireSound.play();
+                    }
+                }
             }
         } else {
             instructionDelay -= elapsed;
