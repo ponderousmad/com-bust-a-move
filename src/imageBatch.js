@@ -87,7 +87,7 @@ var DRAW = (function () {
     tintCanvas.height = 100;
     
     function drawTinted(context, image, x, y, width, height, tint) {
-        tintContext.clearRect(0, 0, image.width, image.height);
+        tintContext.clearRect(0, 0, image.width + 2, image.height + 2);
         tintContext.drawImage(image, 0, 0);
         
         var buffer = tintContext.getImageData(0, 0, image.width, image.height),
