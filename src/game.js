@@ -50,8 +50,8 @@
         winScreen = new Flipbook(loader, "win_image_", 6, 2),
         win1 = loader.load("win_p1.png"),
         win2 = loader.load("win_p2.png"),
-        winSound = new AUDIO.SoundEffect("audio/mus/musGameEnd.ogg"),
-        fireSound = new AUDIO.Music("audio/sfx/sfxFireOnly_Ambience01.ogg"),
+        winSound = new AUDIO.SoundEffect("audio/mus/musGameEnd.mp3"),
+        fireSound = new AUDIO.Music("audio/sfx/sfxFireOnly_Ambience01.mp3"),
         avatar = {
             leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
             rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),
@@ -102,7 +102,7 @@
              letterImages[letter] = loader.load("font/" + letter.toLowerCase() + ".png");
         }
         for (var track = 1; track <= TRACKS; ++track) {
-            musicTracks.push(new AUDIO.Music("audio/mus/musLoop0" + track + ".ogg"));
+            musicTracks.push(new AUDIO.Music("audio/mus/musLoop0" + track + ".mp3"));
         }
         music = GAMEPLAY.randomElement(musicTracks);
         loader.commit();
