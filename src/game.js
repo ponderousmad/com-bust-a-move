@@ -51,7 +51,7 @@
         win1 = loader.load("win_p1.png"),
         win2 = loader.load("win_p2.png"),
         winSound = new AUDIO.SoundEffect("audio/mus/musGameEnd"),
-        fireSound = new AUDIO.Music("audio/sfx/sfxFireOnly_Ambience01"),
+        fireSound = new AUDIO.Music("audio/sfx/sfxFireOnly_Ambience01", true),
         avatar = {
             leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
             rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),

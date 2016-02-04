@@ -14,7 +14,7 @@ var AUDIO = (function (baseURL) {
             gVorbisSupport = true;
             console.log("Using ogg/vorbis");
         } else {
-            console.log("Using mp3 fallback");
+            console.log("Using mp3/wav fallback");
         }
     } catch (error) {
         console.log("Error initializing audio:");
@@ -41,7 +41,7 @@ var AUDIO = (function (baseURL) {
         }
     }
     
-    function setup(sound, resource, loop) {
+    function setup(sound, resource, loop, forceMP3) {
         sound.resource = resource;
         sound.source = null;
         sound.buffer = null;
@@ -50,9 +50,11 @@ var AUDIO = (function (baseURL) {
         resource = baseURL + resource;
         
         if (gVorbisSupport) {
-            resource += ".ogg"
+            resource += ".ogg";
+        } else if (!loop || forceMP3) {
+            resource += ".mp3";
         } else {
-            resource += ".mp3"
+            resource += ".wav";
         }
 
         if (gAudioContext !== null) {
@@ -95,7 +97,7 @@ var AUDIO = (function (baseURL) {
     }
 
     function SoundEffect(resource) {
-        setup(this, resource, false);
+        setup(this, resource, false, false);
     }
         
     SoundEffect.prototype.isLoaded = function () {
@@ -106,8 +108,8 @@ var AUDIO = (function (baseURL) {
         play(this, false);
     };
     
-    function Music(resource) {
-        setup(this, resource, true);
+    function Music(resource, forceMP3) {
+        setup(this, resource, true, forceMP3);
         this.playing = false;
         this.gain = null;
         this.volume = 1;
