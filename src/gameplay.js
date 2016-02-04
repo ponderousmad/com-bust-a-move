@@ -2,10 +2,10 @@ var GAMEPLAY = (function () {
     "use strict";
     
     var loader = new ImageBatch("images/"),
-        flareSound = new AUDIO.SoundEffect("audio/sfx/sfxFlare01.mp3"),
-        wrongSound = new AUDIO.SoundEffect("audio/sfx/sfxDingWrong.mp3"),
-        stunSound = new AUDIO.SoundEffect("audio/sfx/sfxStun01.mp3"),
-        cashinSound = new AUDIO.SoundEffect("audio/sfx/sfxCashin01.mp3"),
+        flareSound = new AUDIO.SoundEffect("audio/sfx/sfxFlare01"),
+        wrongSound = new AUDIO.SoundEffect("audio/sfx/sfxDingWrong"),
+        stunSound = new AUDIO.SoundEffect("audio/sfx/sfxStun01"),
+        cashinSound = new AUDIO.SoundEffect("audio/sfx/sfxCashin01"),
         dings = [],
         dances = [
             new Dance(loader, "dancers/amy_idle_", "dancers/amy_dance_", "dancers/amy_jump_", "dancers/amy_stun_"),
@@ -26,7 +26,7 @@ var GAMEPLAY = (function () {
         MAX_SEQUENCE_LENGTH = 6;
     
     for (var d = 1; d <= MAX_SEQUENCE_LENGTH; ++d) {
-        dings.push(new AUDIO.SoundEffect("audio/sfx/sfxDing0" + d + ".mp3"))
+        dings.push(new AUDIO.SoundEffect("audio/sfx/sfxDing0" + d))
     }
     loader.commit();
     
