@@ -112,9 +112,11 @@
     function update() {
         var now = TIMING.now(),
             elapsed = TIMING.updateDelta(now);
-        
-        if (menuDelay > - INSTRUCTION_FADE) {
-            menuDelay -= elapsed;
+
+        if (loader.loaded) {
+            if (menuDelay > - INSTRUCTION_FADE) {
+                menuDelay -= elapsed;
+            }
         }
         if (menu !== null) {
             if (winner !== null) {
