@@ -26,7 +26,7 @@ var GAMEPLAY = (function () {
         MAX_SEQUENCE_LENGTH = 6;
     
     for (var d = 1; d <= MAX_SEQUENCE_LENGTH; ++d) {
-        dings.push(new AUDIO.SoundEffect("audio/sfx/sfxDing0" + d))
+        dings.push(new AUDIO.SoundEffect("audio/sfx/sfxDing0" + d));
     }
     loader.commit();
     
@@ -193,7 +193,7 @@ var GAMEPLAY = (function () {
         for (var i = 0; i < this.sequence.length; ++i) {
             var dancer = this.sequence[i],
                 xOffset = centerX + offset * this.offsetDirection;
-            dancer.draw(context, this.images, xOffset, centerY, this.offsetDirection < 0, i == 0 ? this.jump : null);
+            dancer.draw(context, this.images, xOffset, centerY, this.offsetDirection < 0, i === 0 ? this.jump : null);
             offset += DANCER_SPACING;
         }
     };
@@ -208,7 +208,7 @@ var GAMEPLAY = (function () {
             avatarBase = centerY + 60;
         
         
-        context.save()
+        context.save();
         context.translate(avatarCenter, 0);
         if(this.offsetDirection < 0) {
             context.scale(-1, 1);
@@ -217,7 +217,7 @@ var GAMEPLAY = (function () {
         DRAW.centered(context, this.avatar.bongo, 0, avatarBase);
         
         if (this.leftSlap !== null) {
-            this.avatar.leftSlap.draw(context, this.leftSlap, 0, avatarBase, ALIGN.Center)
+            this.avatar.leftSlap.draw(context, this.leftSlap, 0, avatarBase, ALIGN.Center);
         }
         if (this.rightSlap !== null) {
             this.avatar.rightSlap.draw(context, this.rightSlap, 0, avatarBase, ALIGN.Center);
@@ -348,7 +348,7 @@ var GAMEPLAY = (function () {
         }
         for (var b = 0; b < this.beatKeys.length; ++b) {
             if (this.updateLetter(this.beatKeys[b], keyboard, false)) {
-                if (b == 0) {
+                if (b === 0) {
                     this.leftSlap = this.avatar.leftSlap.setupPlayback(80, false);    
                 } else {
                     this.rightSlap = this.avatar.rightSlap.setupPlayback(80, false);
@@ -378,7 +378,6 @@ var GAMEPLAY = (function () {
         
         this.onBeat = this.rhythm.onBeat(now, this.beatTolerance);
         
-        var beat = this.rhythm.beatNumber(now, this.beatTolerance);
         if (!this.onBeat && beat > this.lastBeat) {
             this.lastBeat = beat;
             this.pressOnBeat = false;

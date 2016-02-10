@@ -230,7 +230,7 @@
                 }
             
                 if (0 < instructionDelay && instructionDelay < (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME)) {
-                    var delay = instructionDelay
+                    var delay = instructionDelay;
                     if (-instructionDelay + (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME) < INSTRUCTION_FADE) {
                         context.globalAlpha = (-instructionDelay + (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME)) / INSTRUCTION_FADE;
                     } else if (instructionDelay < INSTRUCTION_FADE) {

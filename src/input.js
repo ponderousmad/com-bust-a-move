@@ -1,4 +1,4 @@
-var INPUT = (function (LINEAR, TIMING, AUDIO) {
+var INPUT = (function (TIMING, AUDIO) {
     "use strict";
 
     function KeyboardState(element, capture) {
@@ -77,7 +77,7 @@ var INPUT = (function (LINEAR, TIMING, AUDIO) {
     };
 
     function MouseState(element) {
-        this.location = new LINEAR.Vector(0, 0);
+        this.location = [0, 0];
         this.left = false;
         this.middle = false;
         this.right = false;
@@ -98,7 +98,7 @@ var INPUT = (function (LINEAR, TIMING, AUDIO) {
                 right = (event.buttons & 2) == 2,
                 middle = (event.buttons & 4) == 4;
 
-            self.location.set(event.clientX - bounds.left, event.clientY - bounds.top);
+            self.location = [event.clientX - bounds.left, event.clientY - bounds.top];
                       
             self.wasLeft = self.left;
             self.wasRight = self.right;
@@ -158,4 +158,4 @@ var INPUT = (function (LINEAR, TIMING, AUDIO) {
         MouseState: MouseState,
         TouchState: TouchState
     };
-}(LINEAR, TIMING, AUDIO));
+}(TIMING, AUDIO));

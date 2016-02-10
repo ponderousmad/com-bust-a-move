@@ -129,7 +129,7 @@ var AUDIO = (function (baseURL) {
         if (this.playing) {
             this.gain.gain.value = volume;
         }
-    }
+    };
     
     Music.prototype.stop = function () {
         if (this.source) {
@@ -140,7 +140,7 @@ var AUDIO = (function (baseURL) {
             this.source = null;
         }
         this.playing = false;
-    }
+    };
     
     return {
         SoundEffect: SoundEffect,
