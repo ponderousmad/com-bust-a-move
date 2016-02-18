@@ -169,7 +169,7 @@
 
             if (music !== null && music.isLoaded() && !music.playing) {
                 music.play();
-                ryhthm.restart();
+                resetRhythm();
             }
             GAMEPLAY.updateDances(elapsed);
         }
