@@ -31,7 +31,7 @@ var GAMEPLAY = (function () {
     loader.commit();
     
     function getRandomElement(list) {
-        return list[Math.floor(Math.random() * list.length - 0.00001)];
+        return list[Math.min(Math.floor(Math.random() * list.length), list.length - 1)];
     }
     
     function Dancer(letters, tints) {
