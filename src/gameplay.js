@@ -2,11 +2,11 @@ var GAMEPLAY = (function () {
     "use strict";
     
     var loader = new ImageBatch("images/"),
-        flareSounds = [],
-        wrongSound = new AUDIO.SoundEffect("audio/sfx/sfxDingWrong.ogg"),
-        stunSound = new AUDIO.SoundEffect("audio/sfx/sfxStun01.ogg"),
-        cashinSound = new AUDIO.SoundEffect("audio/sfx/sfxCashin01.ogg"),
+        wrongSound = new AUDIO.SoundEffect("audio/sfx/sfxDingWrong"),
+        stunSound = new AUDIO.SoundEffect("audio/sfx/sfxStun01"),
+        cashinSound = new AUDIO.SoundEffect("audio/sfx/sfxCashin01"),
         dings = [],
+        flareSounds = [],
         dances = [
             new Dance(loader, "dancers/amy_idle_", "dancers/amy_dance_", "dancers/amy_jump_", "dancers/amy_stun_"),
             new Dance(loader, "dancers/amy_idle_", "dancers/betty_dance_", "dancers/amy_jump_", "dancers/amy_stun_"),
@@ -24,20 +24,20 @@ var GAMEPLAY = (function () {
         STUN_DURATION = 1200,
         MIN_SEQUENCE_LENGTH = 6,
         MAX_SEQUENCE_LENGTH = 6;
-    
+
     (function() {
         for (var d = 1; d <= MAX_SEQUENCE_LENGTH; ++d) {
-            dings.push(new AUDIO.SoundEffect("audio/sfx/sfxDing0" + d + ".ogg"))
+            dings.push(new AUDIO.SoundEffect("audio/sfx/sfxDing0" + d))
         }
         for (var f = 1; f <= MAX_SEQUENCE_LENGTH; ++f) {
-            flareSounds.push(new AUDIO.SoundEffect("audio/sfx/sfxFlare0" + f + ".ogg"))
+            flareSounds.push(new AUDIO.SoundEffect("audio/sfx/sfxFlare0" + f))
         }
 
         loader.commit();
     }());
     
     function getRandomElement(list) {
-        return list[Math.floor(Math.random() * list.length - 0.00001)];
+        return list[Math.min(Math.floor(Math.random() * list.length), list.length - 1)];
     }
     
     function Dancer(letters, tints) {
@@ -185,7 +185,7 @@ var GAMEPLAY = (function () {
     Player.prototype.reset = function() {
         this.sequence = this.createSequence(MIN_SEQUENCE_LENGTH);
         this.score = 0;
-        this.activeBeats = 0;
+        this.activeBeats = [];
         this.sync();
     };
     
@@ -199,7 +199,7 @@ var GAMEPLAY = (function () {
         for (var i = 0; i < this.sequence.length; ++i) {
             var dancer = this.sequence[i],
                 xOffset = centerX + offset * this.offsetDirection;
-            dancer.draw(context, this.images, xOffset, centerY, this.offsetDirection < 0, i == 0 ? this.jump : null);
+            dancer.draw(context, this.images, xOffset, centerY, this.offsetDirection < 0, i === 0 ? this.jump : null);
             offset += DANCER_SPACING;
         }
     };
@@ -214,7 +214,7 @@ var GAMEPLAY = (function () {
             avatarBase = centerY + 60;
         
         
-        context.save()
+        context.save();
         context.translate(avatarCenter, 0);
         if(this.offsetDirection < 0) {
             context.scale(-1, 1);
@@ -223,7 +223,7 @@ var GAMEPLAY = (function () {
         DRAW.centered(context, this.avatar.bongo, 0, avatarBase);
         
         if (this.leftSlap !== null) {
-            this.avatar.leftSlap.draw(context, this.leftSlap, 0, avatarBase, ALIGN.Center)
+            this.avatar.leftSlap.draw(context, this.leftSlap, 0, avatarBase, ALIGN.Center);
         }
         if (this.rightSlap !== null) {
             this.avatar.rightSlap.draw(context, this.rightSlap, 0, avatarBase, ALIGN.Center);
@@ -354,7 +354,7 @@ var GAMEPLAY = (function () {
         }
         for (var b = 0; b < this.beatKeys.length; ++b) {
             if (this.updateLetter(this.beatKeys[b], keyboard, false)) {
-                if (b == 0) {
+                if (b === 0) {
                     this.leftSlap = this.avatar.leftSlap.setupPlayback(80, false);    
                 } else {
                     this.rightSlap = this.avatar.rightSlap.setupPlayback(80, false);
@@ -384,7 +384,6 @@ var GAMEPLAY = (function () {
         
         this.onBeat = this.rhythm.onBeat(now, this.beatTolerance);
         
-        var beat = this.rhythm.beatNumber(now, this.beatTolerance);
         if (!this.onBeat && beat > this.lastBeat) {
             this.lastBeat = beat;
             this.pressOnBeat = false;

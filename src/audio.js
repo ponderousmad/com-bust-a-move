@@ -2,10 +2,20 @@ var AUDIO = (function (baseURL) {
     "use strict";
 
     var gAudioContext = null,
+        gVorbisSupport = false,
         gNoteOn = false;
     try {
         var Constructor = window.AudioContext || window.webkitAudioContext;
         gAudioContext = new Constructor();
+        
+        // http://diveintohtml5.info/everything.html#audio-vorbis
+        var a = document.createElement('audio');
+        if (!!(a.canPlayType && a.canPlayType('audio/ogg; codecs="vorbis"').replace(/no/, ''))) {
+            gVorbisSupport = true;
+            console.log("Using ogg/vorbis");
+        } else {
+            console.log("Using mp3/wav fallback");
+        }
     } catch (error) {
         console.log("Error initializing audio:");
         console.log(error);
@@ -31,7 +41,7 @@ var AUDIO = (function (baseURL) {
         }
     }
     
-    function setup(sound, resource, loop) {
+    function setup(sound, resource, loop, forceMP3) {
         sound.resource = resource;
         sound.source = null;
         sound.buffer = null;
@@ -39,6 +49,14 @@ var AUDIO = (function (baseURL) {
         
         resource = baseURL + resource;
         
+        if (gVorbisSupport) {
+            resource += ".ogg";
+        } else if (!loop || forceMP3) {
+            resource += ".mp3";
+        } else {
+            resource += ".wav";
+        }
+
         if (gAudioContext !== null) {
             var request = new XMLHttpRequest();
             request.open("GET", resource, true);
@@ -79,7 +97,7 @@ var AUDIO = (function (baseURL) {
     }
 
     function SoundEffect(resource) {
-        setup(this, resource, false);
+        setup(this, resource, false, false);
     }
         
     SoundEffect.prototype.isLoaded = function () {
@@ -90,8 +108,8 @@ var AUDIO = (function (baseURL) {
         play(this, false);
     };
     
-    function Music(resource) {
-        setup(this, resource, true);
+    function Music(resource, forceMP3) {
+        setup(this, resource, true, forceMP3);
         this.playing = false;
         this.gain = null;
         this.volume = 1;
@@ -111,15 +129,18 @@ var AUDIO = (function (baseURL) {
         if (this.playing) {
             this.gain.gain.value = volume;
         }
-    }
+    };
     
     Music.prototype.stop = function () {
         if (this.source) {
             this.source.stop();
-            this.source.disconnect(gAudioContext.destination);
+            this.gain.disconnect(gAudioContext.destination);
+            this.source.disconnect(this.gain);
+            this.gain = null;
+            this.source = null;
         }
         this.playing = false;
-    }
+    };
     
     return {
         SoundEffect: SoundEffect,

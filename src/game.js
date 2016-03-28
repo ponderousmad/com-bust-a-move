@@ -22,6 +22,9 @@
         CROWD_FRAMES = 8,
         CROWD_WIDTH = BACKGROUND_PIXEL_WIDTH,
         CROWD_HEIGHT = 150,
+        INSTRUCTION_TIME = 15000,
+        INSTRUCTION_PAUSE_TIME = 2500,
+        INSTRUCTION_FADE = 1000,
         WIN_SCORE = 250,
         
         PLAYER1_LETTERS = ["Q", "W", "E", "R", "A", "S", "D", "F"],
@@ -47,7 +50,8 @@
         winScreen = new Flipbook(loader, "win_image_", 6, 2),
         win1 = loader.load("win_p1.png"),
         win2 = loader.load("win_p2.png"),
-        winSound = new AUDIO.SoundEffect("audio/mus/musGameEnd.ogg"),
+        winSound = new AUDIO.SoundEffect("audio/mus/musGameEnd"),
+        fireSound = new AUDIO.Music("audio/sfx/sfxFireOnly_Ambience01", true),
         avatar = {
             leftSlap: new Flipbook(loader, "bongo/slap_l_", 6, 2),
             rightSlap: new Flipbook(loader, "bongo/slap_r_", 6, 2),
@@ -61,6 +65,8 @@
             }
         },
         background = loader.load("bg.png"),
+        instruction = loader.load("instruction.png"),
+        credits = loader.load("credits.png"),
         letterImages = {},
         keyboardState = new INPUT.KeyboardState(window),
         mouseState = null,
@@ -75,7 +81,8 @@
         musicTracks = [],
         music = null,
         menu = titleScreen.setupPlayback(80, true),
-        menuDelay = 5000,
+        menuDelay = 4000,
+        instructionDelay = INSTRUCTION_TIME,
         winner = null,
         fireDraw = fire.setupPlayback(2 * BASE_RHYTHM / FIRE_FRAMES, true),
         drumDraw = null,
@@ -95,7 +102,7 @@
              letterImages[letter] = loader.load("font/" + letter.toLowerCase() + ".png");
         }
         for (var track = 1; track <= TRACKS; ++track) {
-            musicTracks.push(new AUDIO.Music("audio/mus/musLoop0" + track + ".ogg"));
+            musicTracks.push(new AUDIO.Music("audio/mus/musLoop0" + track));
         }
         music = GAMEPLAY.randomElement(musicTracks);
         loader.commit();
@@ -105,14 +112,18 @@
     function update() {
         var now = TIMING.now(),
             elapsed = TIMING.updateDelta(now);
-        
+
+        if (loader.loaded) {
+            if (menuDelay > - INSTRUCTION_FADE) {
+                menuDelay -= elapsed;
+            }
+        }
         if (menu !== null) {
             if (winner !== null) {
                 winScreen.updatePlayback(elapsed, menu);
             } else {
                 titleScreen.updatePlayback(elapsed, menu);
             }
-            menuDelay -= elapsed;
             if (menuDelay < 0) {
                 menu = null;
                 if (winner !== null) {
@@ -122,8 +133,11 @@
                 winner = null;
                 player1.reset();
                 player2.reset();
+            } else if (fireSound.isLoaded() && !fireSound.playing) {
+                fireSound.play();
             }
         } else {
+            instructionDelay -= elapsed;
             if (!inSync) {
                 if (keyboardState.keysDown() > 0) {
                     resetRhythm();
@@ -155,7 +169,7 @@
 
             if (music !== null && music.isLoaded() && !music.playing) {
                 music.play();
-                ryhthm.restart();
+                resetRhythm();
             }
             GAMEPLAY.updateDances(elapsed);
         }
@@ -195,6 +209,7 @@
                     }
                 } else {
                     titleScreen.draw(context, menu, 0, 0, ALIGN.Center);
+                    DRAW.centeredScaled(context, credits, 0, 0, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH);
                 }
             } else {
                 crowd.draw(context, crowdDraw, centerX, centerY + 2, ALIGN.Center, CROWD_WIDTH, CROWD_HEIGHT);
@@ -203,6 +218,25 @@
                 player1.draw(context, centerX, centerY);
                 if (twoPlayer) {
                     player2.draw(context, centerX, centerY);
+                }
+                
+                if (menuDelay + INSTRUCTION_FADE > 0 && winner === null) {
+                    var fraction = menuDelay / INSTRUCTION_FADE;
+                    fraction = fraction * fraction;
+                    context.globalAlpha = 1 - fraction;
+                    var titleOffset = -40 * fraction;
+                    titleScreen.draw(context, titleScreen.setupPlayback(80, true, menuDelay + INSTRUCTION_FADE), 0, titleOffset, ALIGN.Center);
+                    DRAW.centeredScaled(context, credits, 0, 0, BACKGROUND_PIXEL_WIDTH, BACKGROUND_PIXEL_WIDTH);
+                }
+            
+                if (0 < instructionDelay && instructionDelay < (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME)) {
+                    var delay = instructionDelay;
+                    if (-instructionDelay + (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME) < INSTRUCTION_FADE) {
+                        context.globalAlpha = (-instructionDelay + (INSTRUCTION_TIME - INSTRUCTION_PAUSE_TIME)) / INSTRUCTION_FADE;
+                    } else if (instructionDelay < INSTRUCTION_FADE) {
+                        context.globalAlpha = instructionDelay / INSTRUCTION_FADE;
+                    }
+                    DRAW.centered(context, instruction, 0, 0);
                 }
             }
         }
